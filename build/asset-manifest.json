@@ -1,0 +1,42 @@
+{
+  "files": {
+    "Dashboard.js": "/static/js/Dashboard.c5be7cea.chunk.js",
+    "main.css": "/static/css/main.b2f6628a.chunk.css",
+    "main.js": "/static/js/main.b39decf8.chunk.js",
+    "runtime-main.js": "/static/js/runtime-main.a1414a3d.js",
+    "static/css/3.67deb57a.chunk.css": "/static/css/3.67deb57a.chunk.css",
+    "static/js/3.4c4612e6.chunk.js": "/static/js/3.4c4612e6.chunk.js",
+    "static/css/4.9396b8a1.chunk.css": "/static/css/4.9396b8a1.chunk.css",
+    "static/js/4.8d8fc812.chunk.js": "/static/js/4.8d8fc812.chunk.js",
+    "static/js/5.73e9c922.chunk.js": "/static/js/5.73e9c922.chunk.js",
+    "index.html": "/index.html",
+    "static/css/3.67deb57a.chunk.css.gz": "/static/css/3.67deb57a.chunk.css.gz",
+    "static/css/3.67deb57a.chunk.css.map": "/static/css/3.67deb57a.chunk.css.map",
+    "static/css/4.9396b8a1.chunk.css.gz": "/static/css/4.9396b8a1.chunk.css.gz",
+    "static/css/4.9396b8a1.chunk.css.map": "/static/css/4.9396b8a1.chunk.css.map",
+    "static/css/main.b2f6628a.chunk.css.map": "/static/css/main.b2f6628a.chunk.css.map",
+    "static/js/3.4c4612e6.chunk.js.LICENSE.txt": "/static/js/3.4c4612e6.chunk.js.LICENSE.txt",
+    "static/js/3.4c4612e6.chunk.js.gz": "/static/js/3.4c4612e6.chunk.js.gz",
+    "static/js/4.8d8fc812.chunk.js.LICENSE.txt": "/static/js/4.8d8fc812.chunk.js.LICENSE.txt",
+    "static/js/4.8d8fc812.chunk.js.gz": "/static/js/4.8d8fc812.chunk.js.gz",
+    "static/js/5.73e9c922.chunk.js.gz": "/static/js/5.73e9c922.chunk.js.gz",
+    "static/js/Dashboard.c5be7cea.chunk.js.gz": "/static/js/Dashboard.c5be7cea.chunk.js.gz",
+    "static/js/main.b39decf8.chunk.js.gz": "/static/js/main.b39decf8.chunk.js.gz",
+    "static/js/runtime-main.a1414a3d.js.gz": "/static/js/runtime-main.a1414a3d.js.gz",
+    "static/media/busy.c4668539.svg": "/static/media/busy.c4668539.svg",
+    "static/media/default.1f281972.svg": "/static/media/default.1f281972.svg",
+    "static/media/disconnected.9c7ea75e.svg": "/static/media/disconnected.9c7ea75e.svg",
+    "static/media/empty-icon.svg": "/static/media/empty-icon.0e5fd287.svg",
+    "static/media/empty.f2b844b2.svg": "/static/media/empty.f2b844b2.svg",
+    "static/media/selector-check-mark.svg": "/static/media/selector-check-mark.11465817.svg",
+    "static/media/slider.css": "/static/media/slider-thumb.3d161c84.svg",
+    "static/media/spin.a71ffb17.svg": "/static/media/spin.a71ffb17.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.a1414a3d.js",
+    "static/css/4.9396b8a1.chunk.css",
+    "static/js/4.8d8fc812.chunk.js",
+    "static/css/main.b2f6628a.chunk.css",
+    "static/js/main.b39decf8.chunk.js"
+  ]
+}
