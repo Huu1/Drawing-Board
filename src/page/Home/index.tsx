@@ -1,69 +1,66 @@
+import ColorPicker from '@/components/ColorPicker';
 import useClientRect from '@/Hooks/useClient';
+import { getBoardSetting, TBoardPattern } from '@/store/feature/boardSlice';
+import { getBrushSetting } from '@/store/feature/brushSlice';
 import * as React from 'react';
-
-let canvas: HTMLCanvasElement;
+import { useSelector } from 'react-redux';
+import {
+  MouseCbRetuen,
+  useCanvasInit,
+  useCanvasMouseMoveEvent
+} from './useCanvas';
 
 export default function Home() {
   const [canvasWrapDOM, ref] = useClientRect();
-  // const [ctx, setCanvas] = React.useState<CanvasRenderingContext2D | null>();
 
-  React.useEffect(() => {
-    canvas = document.getElementById('canvas') as HTMLCanvasElement;
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+  const { canvas, ctx } = useCanvasInit(canvasWrapDOM as HTMLElement);
 
-    let lastInfo = { x: 0, y: 0 };
-    const windowToCanvas = (x: number, y: number) => {
-      const bbox = canvas.getBoundingClientRect();
-      return { x: Math.round(x - bbox.left), y: Math.round(y - bbox.top) };
-    };
-    let isMouseDown = false;
+  const { brushWidth, brushColor } = useSelector(getBrushSetting);
+  const { boardPattern } = useSelector(getBoardSetting);
 
-    canvas.addEventListener('mousedown', (e: MouseEvent) => {
-      isMouseDown = true;
-      lastInfo = windowToCanvas(e.clientX, e.clientY);
-    });
-    canvas.addEventListener('mouseup', () => {
-      isMouseDown = false;
-    });
-    canvas.addEventListener('mousemove', (e: MouseEvent) => {
-      if (isMouseDown) {
-        let curInfo = windowToCanvas(e.clientX, e.clientY);
+  // 画笔模式
+  const brush = React.useCallback(
+    (ctx, curInfo, lastInfo) => {
+      ctx.beginPath();
+      ctx.moveTo(lastInfo.clientX, lastInfo.clientY);
+      ctx.lineTo(curInfo.clientX, curInfo.clientY);
 
-        ctx.beginPath();
-        ctx.moveTo(lastInfo.x, lastInfo.y);
-        ctx.lineTo(curInfo.x, curInfo.y);
+      ctx.strokeStyle = brushColor;
+      ctx.lineWidth = brushWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    },
+    [brushWidth, brushColor]
+  );
 
-        ctx.strokeStyle = 'red';
-        ctx.stroke();
-
-        lastInfo = curInfo;
+  const handle = React.useCallback(
+    ({ ctx, curInfo, lastInfo }: MouseCbRetuen) => {
+      switch (boardPattern) {
+        case TBoardPattern.brush:
+          brush(ctx, curInfo, lastInfo);
+          break;
+        default:
+          break;
       }
-    });
-    canvas.addEventListener('mouseout', () => {
-      isMouseDown = false;
-    });
-  }, []);
+    },
+    [brush, boardPattern]
+  );
 
-  React.useEffect(() => {
-    const resize = () => {
-      canvas.width = (canvasWrapDOM as HTMLElement).clientWidth;
-      canvas.height = (canvasWrapDOM as HTMLElement).clientHeight;
-    };
-    if (canvas && canvasWrapDOM) {
-      resize();
-      window.addEventListener('resize', resize);
-    }
-    return () => {
-      window.removeEventListener('resize', resize);
-    };
-  }, [canvasWrapDOM]);
+  useCanvasMouseMoveEvent(
+    canvas as HTMLCanvasElement,
+    ctx as CanvasRenderingContext2D,
+    handle
+  );
 
   return (
-    <div
-      ref={ref as React.LegacyRef<HTMLDivElement>}
-      style={{ height: '100%' }}
-    >
-      <canvas id='canvas'></canvas>
-    </div>
+    <>
+      <div
+        ref={ref as React.LegacyRef<HTMLDivElement>}
+        style={{ height: '100%' }}
+      >
+        <canvas id='canvas'></canvas>
+      </div>
+    </>
   );
 }

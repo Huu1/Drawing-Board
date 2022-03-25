@@ -1,0 +1,38 @@
+.swatch {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  box-sizing: content-box;
+  margin-top: 5px;
+}
+
+.popover {
+  position: absolute;
+  left: 0;
+  top: 30px;
+  border-radius: 9px;
+}
+
+.color-checked {
+  box-shadow: 0 0 0 2px #c4c4c4, inset 0 0 0 2px #293039;
+}
+
+.popover input {
+  display: block;
+  box-sizing: border-box;
+  width: 90px;
+  margin: 10px 55px 0;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #eee;
+  outline: none;
+  font: inherit;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.popover input:focus {
+  border-color: #4298ef;
+}

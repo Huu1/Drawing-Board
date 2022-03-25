@@ -1,15 +1,22 @@
-import Header from '@/layout/Header';
+import { Header as PageHeader } from '@/layout/Header';
+import { Layout } from 'antd';
 import * as React from 'react';
+import LeftSider from './LeftSider';
 
-type Props = {
-  children: React.ReactNode;
-};
+const { Sider, Content } = Layout;
 
-export default function AppLayout(props: Props) {
+export default function AppLayout(props: { children: React.ReactNode }) {
   return (
-    <div className='h-screen	flex flex-col'>
-      <Header></Header>
-      <main className='flex-1	'>{props.children}</main>
-    </div>
+    <Layout className='h-screen	flex flex-col'>
+      <PageHeader />
+      <Layout>
+        <Sider className='px-4' style={{ width: '240px' }}>
+          <LeftSider />
+        </Sider>
+        <Content className='bg-secondary'>
+          <main className='h-full'>{props.children}</main>
+        </Content>
+      </Layout>
+    </Layout>
   );
 }
