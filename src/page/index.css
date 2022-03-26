@@ -1,0 +1,14 @@
+.containers {
+  height: 800px;
+  width: 800px;
+  background-color: aquamarine;
+  /* transition: all 0.3s ease; */
+  position: relative;
+}
+
+#canvas {
+  background-color: whitesmoke;
+  position: absolute;
+  top: 0;
+  left: 0;
+}

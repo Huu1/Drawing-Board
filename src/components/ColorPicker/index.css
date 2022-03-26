@@ -4,14 +4,17 @@
   border-radius: 4px;
   cursor: pointer;
   box-sizing: content-box;
+  text-align: center;
   margin-top: 5px;
+  font-size: 18px;
+  line-height: 23px;
+  color: whitesmoke;
 }
 
 .popover {
   position: absolute;
   left: 0;
-  top: 30px;
-  border-radius: 9px;
+  top: 37px;
 }
 
 .color-checked {
@@ -31,6 +34,7 @@
   font: inherit;
   text-transform: uppercase;
   text-align: center;
+  color: #293039;
 }
 
 .popover input:focus {

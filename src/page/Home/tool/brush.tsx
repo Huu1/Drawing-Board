@@ -13,10 +13,11 @@ const BrushTool = () => {
   const dispatch = useDispatch();
   return (
     <div>
-      <div>画笔</div>
-      <Row justify='space-between'>
-        <Col span={4}>宽度</Col>
-        <Col span={16}>
+      <Row justify='space-between' align='middle'>
+        <Col span={8} className='text-gray-300'>
+          画笔粗细
+        </Col>
+        <Col span={14}>
           <Slider
             min={1}
             max={80}
@@ -34,5 +35,7 @@ const BrushTool = () => {
     </div>
   );
 };
+
+BrushTool.displayName = 'BrushTool';
 
 export default React.memo(BrushTool);

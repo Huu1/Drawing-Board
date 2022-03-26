@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { setCanvas, setCtx } from '@/store/feature/boardSlice';
+import { Dispatch } from '@reduxjs/toolkit';
+import React, { useEffect } from 'react';
 
 type MouseXY = Pick<MouseEvent, 'clientX' | 'clientY'>;
 
@@ -8,29 +10,23 @@ export type MouseCbRetuen = {
   lastInfo: MouseXY;
 };
 
-export const useCanvasInit = (canvasWrapDOM: HTMLElement) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_canvas, setCanvas] = useState<HTMLCanvasElement>();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_ctx, setCtx] = useState<CanvasRenderingContext2D>();
+export const useCanvasInit = (
+  wrapDom: HTMLDivElement,
+  dispatch: Dispatch<any>
+) => {
   React.useEffect(() => {
-    if (canvasWrapDOM) {
-      let canvas = document.getElementById('canvas') as HTMLCanvasElement;
-      let ctx: CanvasRenderingContext2D;
-      ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-      canvas.width = (canvasWrapDOM as HTMLElement).clientWidth;
-      canvas.height = (canvasWrapDOM as HTMLElement).clientHeight;
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      setCanvas(canvas);
-      setCtx(ctx);
+    if (wrapDom) {
+      // 创建canvas画布
+      let canvas = document.createElement('canvas');
+      let ctx = canvas.getContext('2d');
+      canvas.height = wrapDom.clientHeight;
+      canvas.width = wrapDom.clientWidth;
+      canvas.style.background = '#fff';
+      wrapDom.appendChild(canvas);
+      dispatch(setCanvas(canvas));
+      dispatch(setCtx(ctx));
     }
-  }, [canvasWrapDOM]);
-
-  return {
-    canvas: _canvas,
-    ctx: _ctx
-  };
+  }, [wrapDom, dispatch]);
 };
 
 export const useCanvasMouseMoveEvent = (
@@ -68,12 +64,10 @@ export const useCanvasMouseMoveEvent = (
       }
     };
 
-    if (canvas && ctx) {
-      canvas.addEventListener('mousedown', mousedown);
-      canvas.addEventListener('mouseup', mouseup);
-      canvas.addEventListener('mouseout', mouseout);
-      canvas.addEventListener('mousemove', mousemove);
-    }
+    canvas?.addEventListener('mousedown', mousedown);
+    canvas?.addEventListener('mouseup', mouseup);
+    canvas?.addEventListener('mouseout', mouseout);
+    canvas?.addEventListener('mousemove', mousemove);
 
     return () => {
       canvas?.removeEventListener('mousedown', mousedown);
@@ -83,3 +77,5 @@ export const useCanvasMouseMoveEvent = (
     };
   }, [canvas, ctx, mouseMoveCallback]);
 };
+
+export const useCanvasSize = () => {};

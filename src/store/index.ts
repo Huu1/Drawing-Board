@@ -6,5 +6,9 @@ export default configureStore({
   reducer: {
     brush: brushSlice,
     board: boardSlice
-  }
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false
+    })
 });

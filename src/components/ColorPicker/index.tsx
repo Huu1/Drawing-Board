@@ -2,6 +2,8 @@ import useClickOutside from '@/Hooks/useOutSide';
 import * as React from 'react';
 import { HexColorInput, HexColorPicker } from 'react-colorful';
 
+import { BgColorsOutlined } from '@ant-design/icons';
+
 import './index.css';
 
 interface ColorPickerProps {
@@ -17,7 +19,8 @@ const defaultColorList: string[] = [
   '#c9e265',
   '#ff914d',
   '#ff66c4',
-  '#000000'
+  '#000000',
+  '#ffffff'
 ];
 
 const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
@@ -31,13 +34,14 @@ const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
   return (
     <div className='flex flex-wrap'>
       <div
-        className={`swatch relative ${color && !flag ? 'color-checked' : ''}`}
+        className={`swatch  relative ${color && !flag ? 'color-checked' : ''}`}
         style={{ backgroundColor: color }}
         onClick={() => {
           toggleFlag(false);
           toggle(true);
         }}
       >
+        <BgColorsOutlined />
         {isOpen && (
           <div className='popover' ref={popover as any}>
             <HexColorPicker color={color} onChange={onChange} />
