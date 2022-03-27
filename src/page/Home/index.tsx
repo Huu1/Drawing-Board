@@ -2,94 +2,130 @@ import useDom from '@/Hooks/useDom';
 import { getBoardSetting, TBoardPattern } from '@/store/feature/boardSlice';
 import { getBrushSetting } from '@/store/feature/brushSlice';
 import * as React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  MouseCbRetuen,
-  useCanvasInit,
-  useCanvasMouseMoveEvent
-} from './useCanvas';
-let data: any;
-export default function Home() {
-  const dispatch = useDispatch();
-  const { brushWidth, brushColor } = useSelector(getBrushSetting);
-  const { boardPattern, boardBgColor, boardSize, canvas, ctx } =
-    useSelector(getBoardSetting);
+import { Stage, Layer, Text, Line } from 'react-konva';
+import { useSelector } from 'react-redux';
 
+let timer;
+
+const Demo = () => {
+  const [tool, setTool] = React.useState('pen');
+  const [lines, setLines] = React.useState<any>([]);
+  const isDrawing = React.useRef(false);
+  const [isMounted, Mounted] = React.useState(false);
   const [canvasWrapDOM, canvasWrapDOMRef] = useDom<HTMLDivElement>();
-  // const [canvasDOM, canvasRef] = useDom<HTMLCanvasElement>();
 
-  useCanvasInit(canvasWrapDOM, dispatch);
+  const { brushWidth, brushColor } = useSelector(getBrushSetting);
+  const { boardPattern } = useSelector(getBoardSetting);
 
-  // 画笔模式
-  const brush = React.useCallback(
-    ({ ctx, curInfo, lastInfo }: MouseCbRetuen) => {
-      ctx.beginPath();
-      ctx.moveTo(lastInfo.clientX, lastInfo.clientY);
-      ctx.lineTo(curInfo.clientX, curInfo.clientY);
+  React.useEffect(() => {
+    if (canvasWrapDOM) {
+      Mounted(true);
+    }
+  }, [canvasWrapDOM]);
 
-      ctx.strokeStyle = brushColor;
-      ctx.lineWidth = brushWidth;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.stroke();
+  const handleMouseDown = React.useCallback(
+    (e: any) => {
+      isDrawing.current = true;
+      const pos = e.target.getStage().getPointerPosition();
+      setLines((lines: any[]) => [
+        ...lines,
+        { tool, points: [pos.x, pos.y], stroke: brushColor }
+      ]);
     },
-    [brushWidth, brushColor]
+    [brushColor, tool]
   );
 
-  // 直线
-  const line = React.useCallback(
-    ({ ctx, curInfo, lastInfo }: MouseCbRetuen) => {
-      // data = ctx.getImageData(0, 0, canvas!.width, canvas!.height);
-      // ctx.clearRect(0, 0, 600, 600);
-      // ctx.moveTo(lastInfo.clientX, lastInfo.clientY);
-      // ctx.lineTo(curInfo.clientX, curInfo.clientY);
-      // ctx.putImageData(data, 0, 0);
-      // ctx.stroke();
-      // data = ctx.getImageData(0, 0, canvas!.width, canvas!.height);
-      // ctx.lineCap = 'round';
-      // ctx.lineJoin = 'round';
-      // ctx.stroke();
-    },
-    [brushWidth, brushColor, canvas]
-  );
-
-  const handle = React.useCallback(
-    (context: MouseCbRetuen) => {
-      switch (boardPattern) {
-        case TBoardPattern.brush:
-          brush(context);
-          break;
-        case TBoardPattern.line:
-          line(context);
-          break;
-        default:
-          break;
+  const handleMouseMove = React.useCallback(
+    (e: any) => {
+      // no drawing - skipping
+      if (!isDrawing.current) {
+        return;
       }
+      const stage = e.target.getStage();
+      const point = stage.getPointerPosition();
+      setLines((lines: any[]) => {
+        let lastLine = lines[lines.length - 1];
+        lastLine.stroke = brushColor;
+        lastLine.strokeWidth = brushWidth;
+        lastLine.dash = [];
+
+        // add point
+        switch (boardPattern) {
+          case TBoardPattern.brush:
+            lastLine.points = lastLine.points.concat([point.x, point.y]);
+            break;
+          case TBoardPattern.line:
+            lastLine.points = [
+              lastLine.points[0],
+              lastLine.points[1],
+              point.x,
+              point.y
+            ];
+            break;
+
+          default:
+            break;
+        }
+        // replace last
+        lines.splice(lines.length - 1, 1, lastLine);
+
+        return lines.concat();
+      });
     },
-    [brush, boardPattern, line]
+    [boardPattern, brushColor, brushWidth]
   );
 
-  useCanvasMouseMoveEvent(
-    canvas as HTMLCanvasElement,
-    ctx as CanvasRenderingContext2D,
-    handle
-  );
-
-  // React.useEffect(() => {
-  //   if (canvas) {
-  //     const { height, width } = boardSize;
-  //     canvas.setAttribute('width', width + 'px');
-  //     canvas.setAttribute('height', height + 'px');
-  //   }
-  // }, [boardSize, canvas]);
+  const handleMouseUp = React.useCallback(() => {
+    isDrawing.current = false;
+  }, []);
 
   return (
-    <>
-      <div
-        ref={canvasWrapDOMRef as React.LegacyRef<HTMLDivElement>}
-        style={{ height: '100%' }}
-        className='relative rounded-sm overflow-hidden'
-      ></div>
-    </>
+    <div
+      ref={canvasWrapDOMRef as React.LegacyRef<HTMLDivElement>}
+      style={{ height: '100%', background: 'white' }}
+      className='relative rounded-sm overflow-hidden'
+    >
+      {isMounted && (
+        <Stage
+          width={canvasWrapDOM.clientWidth}
+          height={canvasWrapDOM.clientHeight}
+          onMouseDown={handleMouseDown}
+          onMousemove={handleMouseMove}
+          onMouseup={handleMouseUp}
+        >
+          <Layer>
+            <Text text='Just start drawing' x={5} y={30} />
+            {lines.map((line: any, i: any) => (
+              <Line
+                key={i}
+                points={line.points}
+                stroke={line.stroke}
+                strokeWidth={line.strokeWidth}
+                tension={0.5}
+                dash={line.dash}
+                lineCap='round'
+                lineJoin='round'
+                globalCompositeOperation={
+                  line.tool === 'eraser' ? 'destination-out' : 'source-over'
+                }
+              />
+            ))}
+          </Layer>
+        </Stage>
+      )}
+
+      <select
+        value={tool}
+        className='absolute'
+        onChange={(e) => {
+          setTool(e.target.value);
+        }}
+      >
+        <option value='pen'>Pen</option>
+        <option value='eraser'>Eraser</option>
+      </select>
+    </div>
   );
-}
+};
+
+export default Demo;
