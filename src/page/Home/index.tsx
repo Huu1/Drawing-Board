@@ -7,7 +7,7 @@ import {
   TBoardPattern
 } from '@/store/feature/boardSlice';
 import { getLineStyle, LinePattern } from '@/store/feature/lineSlice';
-import { debounce } from '@/utils';
+import { debounce, windowToCurrentPos } from '@/utils';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { ArrowConfig } from 'konva/lib/shapes/Arrow';
 import { LineConfig } from 'konva/lib/shapes/Line';
@@ -24,7 +24,6 @@ const Home = () => {
   const [arrows, setArrows] = React.useState<ArrowConfig[]>([]);
   const [rects, setRect] = React.useState<RectConfig[]>([]);
   const [isMounted, Mounted] = React.useState(false);
-  const [canvasWrapDOM, canvasWrapDOMRef] = useDom<HTMLDivElement>();
 
   const { strokeWidth, stroke, dash, linePattrn } = useSelector(getLineStyle);
   const { boardPattern, boardBgColor, boardSize, scale } =
@@ -32,14 +31,6 @@ const Home = () => {
 
   const dispatch = useDispatch();
   React.useEffect(() => {
-    const config = { attributes: true };
-    // 创建一个观察器实例并传入回调函数
-    const observer = new MutationObserver(([{ target }]) => {
-      const bbox = (target as HTMLDivElement).getBoundingClientRect();
-      console.log(target);
-    });
-    // 以上述配置开始观察目标节点
-    observer.observe(containerRef.current, config);
     dispatch(
       setBoardSize({
         width: containerRef.current.clientWidth,
@@ -188,39 +179,33 @@ const Home = () => {
 
   const onWheel = (e: any) => {
     if (e.evt?.deltaY) {
-      console.log(e.evt);
-
-      const { layerX, layerY, clientX, clientY } = e.evt;
-
+      const { layerX, layerY } = e.evt;
       const transformOrigin = `${layerX}px ${layerY}px`;
 
       //判断浏览器IE，谷歌滑轮事件
       if (e.evt.deltaY > 0) {
         if (scale > 0.25) {
-          window.requestAnimationFrame(() => {
-            containerRef.current.style.transformOrigin = transformOrigin;
-            containerRef.current.style.transform = `scale(${scale - 0.25})`;
-          });
-          dispatch(setScale(scale - 0.2));
+          // window.requestAnimationFrame(() => {
+          containerRef.current.style.transformOrigin = transformOrigin;
+          containerRef.current.style.transform = `scale(${scale - 0.25})`;
+          // });
+          dispatch(setScale(scale - 0.25));
         }
       }
       if (e.evt.deltaY < 0) {
         if (scale < 1.25) {
-          window.requestAnimationFrame(() => {
-            containerRef.current.style.transformOrigin = transformOrigin;
-            containerRef.current.style.transform = `scale(${scale + 0.25})`;
-          });
-          dispatch(setScale(scale + 0.2));
+          // window.requestAnimationFrame(() => {
+          containerRef.current.style.transformOrigin = transformOrigin;
+          containerRef.current.style.transform = `scale(${scale + 0.25})`;
+          // });
+          dispatch(setScale(scale + 0.25));
         }
       }
     }
   };
 
   return (
-    <div
-      ref={containerRef}
-      className='relative h-full rounded-sm transition-all'
-    >
+    <div ref={containerRef} className='relative h-full rounded-sm '>
       {isMounted && (
         <Stage
           width={boardSize.width}
@@ -229,7 +214,7 @@ const Home = () => {
           onMousemove={handleMouseMove}
           onMouseup={handleMouseUp}
           onMouseLeave={handleMouseLeave}
-          onWheel={debounce(onWheel, 150, true)}
+          onWheel={onWheel}
           className='page-shadow'
         >
           <Layer>

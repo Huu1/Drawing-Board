@@ -1,4 +1,13 @@
-export const windowToCanvas = (x: number, y: number) => {};
+export const windowToCurrentPos = (
+  x: number,
+  y: number,
+  bbox: { left: number; top: number }
+) => {
+  return {
+    x: Math.round(x - bbox.left),
+    y: Math.round(y - bbox.top)
+  };
+};
 
 // 增加前缘触发功能
 export function debounce(fn: Function, wait: number, immediate = false) {
