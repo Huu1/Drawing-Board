@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
+import arrowSlice from './feature/arrowSlice';
 import boardSlice from './feature/boardSlice';
-import brushSlice from './feature/brushSlice';
+import lineSlice from './feature/lineSlice';
 
 export default configureStore({
   reducer: {
-    brush: brushSlice,
-    board: boardSlice
+    board: boardSlice,
+    line: lineSlice,
+    arrow: arrowSlice
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

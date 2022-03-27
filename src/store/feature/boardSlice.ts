@@ -1,13 +1,16 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 export enum TBoardPattern {
-  brush = 'brush',
-  line = 'line'
+  line = 'line',
+  arrow = 'arrow',
+  rect = 'rect'
 }
 
 export enum LeftToolPattern {
-  brush = 'brush',
-  board = 'board'
+  board = 'board',
+  line = 'line',
+  arrow = 'arrow',
+  rect = 'rect'
 }
 
 export type BoardSizeType = {
@@ -26,14 +29,11 @@ interface IState {
   boardPattern: TBoardPattern;
   // 左边工具栏
   leftSideTool: LeftToolPattern;
-
-  canvas: HTMLCanvasElement | null;
-  ctx: CanvasRenderingContext2D | null;
 }
 
 const initialState: IState = {
   boardBgColor: '#fff',
-  boardPattern: TBoardPattern.brush,
+  boardPattern: TBoardPattern.line,
   leftSideTool: LeftToolPattern.board,
   boardSize: {
     width: 300,
@@ -42,9 +42,7 @@ const initialState: IState = {
   maxBoardSize: {
     width: 300,
     height: 150
-  },
-  canvas: null,
-  ctx: null
+  }
 };
 
 const brushSlice = createSlice({
@@ -55,7 +53,6 @@ const brushSlice = createSlice({
       state.boardPattern = action.payload;
     },
     setBoardBgColor(state, action) {
-      state.canvas!.style.backgroundColor = action.payload;
       state.boardBgColor = action.payload;
     },
     setLeftSideTool(state, action) {
@@ -66,12 +63,6 @@ const brushSlice = createSlice({
     },
     setMaxBoardSize(state, action) {
       state.maxBoardSize = action.payload;
-    },
-    setCanvas(state, action) {
-      state.canvas = action.payload;
-    },
-    setCtx(state, action) {
-      state.ctx = action.payload;
     }
   }
 });
@@ -81,9 +72,7 @@ export const {
   setBoardBgColor,
   setLeftSideTool,
   setBoardSize,
-  setMaxBoardSize,
-  setCtx,
-  setCanvas
+  setMaxBoardSize
 } = brushSlice.actions;
 
 export default brushSlice.reducer;

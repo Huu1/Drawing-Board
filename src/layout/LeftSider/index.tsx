@@ -1,9 +1,9 @@
-import BrushTool from '@/page/Home/tool/brush';
-import BoradTool from '@/page/Home/tool/board';
+import LineTool from '@/layout/tool/lineTool';
+import BoradTool from '@/layout/tool/boardTool';
 import { getBoardSetting, LeftToolPattern } from '@/store/feature/boardSlice';
-import { Radio } from 'antd';
 import React from 'react';
 import { useSelector } from 'react-redux';
+import ArrowTool from '../tool/arrowTool';
 
 const LeftSider = () => {
   const { leftSideTool } = useSelector(getBoardSetting);
@@ -13,8 +13,11 @@ const LeftSider = () => {
       case LeftToolPattern.board:
         result = <BoradTool />;
         break;
-      case LeftToolPattern.brush:
-        result = <BrushTool />;
+      case LeftToolPattern.line:
+        result = <LineTool />;
+        break;
+      case LeftToolPattern.arrow:
+        result = <ArrowTool />;
         break;
       default:
         break;

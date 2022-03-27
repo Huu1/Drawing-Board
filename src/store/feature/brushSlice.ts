@@ -5,13 +5,15 @@ interface IState {
   error: string | undefined;
   brushWidth: number;
   brushColor: string;
+  brushDash: number[];
 }
 
 const initialState: IState = {
   status: 'idel',
   error: undefined,
   brushWidth: 1,
-  brushColor: 'black'
+  brushColor: 'black',
+  brushDash: []
 };
 
 const brushSlice = createSlice({
@@ -23,11 +25,15 @@ const brushSlice = createSlice({
     },
     setBrushWidth(state, action) {
       state.brushWidth = action.payload;
+    },
+    setBrushDash(state, action) {
+      state.brushDash = action.payload;
     }
   }
 });
 
-export const { setBrushColor, setBrushWidth } = brushSlice.actions;
+export const { setBrushColor, setBrushWidth, setBrushDash } =
+  brushSlice.actions;
 
 export default brushSlice.reducer;
 
