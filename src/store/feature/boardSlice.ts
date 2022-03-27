@@ -24,11 +24,13 @@ interface IState {
   // 画板尺寸
   boardSize: BoardSizeType;
   // 画板尺寸最大值
-  maxBoardSize: BoardSizeType;
+  maxBoardSize: BoardSizeType | null;
   // 画画模式
   boardPattern: TBoardPattern;
   // 左边工具栏
   leftSideTool: LeftToolPattern;
+
+  scale: number;
 }
 
 const initialState: IState = {
@@ -39,10 +41,8 @@ const initialState: IState = {
     width: 300,
     height: 150
   },
-  maxBoardSize: {
-    width: 300,
-    height: 150
-  }
+  maxBoardSize: null,
+  scale: 1
 };
 
 const brushSlice = createSlice({
@@ -60,9 +60,12 @@ const brushSlice = createSlice({
     },
     setBoardSize(state, action) {
       state.boardSize = action.payload;
+      if (!state.maxBoardSize) {
+        state.maxBoardSize = action.payload;
+      }
     },
-    setMaxBoardSize(state, action) {
-      state.maxBoardSize = action.payload;
+    setScale(state, action) {
+      state.scale = action.payload;
     }
   }
 });
@@ -72,7 +75,7 @@ export const {
   setBoardBgColor,
   setLeftSideTool,
   setBoardSize,
-  setMaxBoardSize
+  setScale
 } = brushSlice.actions;
 
 export default brushSlice.reducer;

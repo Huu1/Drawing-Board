@@ -14,11 +14,13 @@ export function Header(props: any) {
 
   const onPatternChange = (value: string) => {
     dispatch(setLeftSideTool(value));
+
+    // bug
     dispatch(setBoardPattern(value));
   };
 
   return (
-    <div className='	px-4 py-2	 bg-secondary '>
+    <div className='	 py-1	 bg-secondary '>
       <Radio.Group
         defaultValue='board'
         buttonStyle='solid'

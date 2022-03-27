@@ -1,16 +1,24 @@
 import useDom from '@/Hooks/useDom';
 import { KonvaArrow, KonvaLine, KonvaRect } from '@/konva-components/Shpe';
-import { getBoardSetting, TBoardPattern } from '@/store/feature/boardSlice';
+import {
+  getBoardSetting,
+  setBoardSize,
+  setScale,
+  TBoardPattern
+} from '@/store/feature/boardSlice';
 import { getLineStyle, LinePattern } from '@/store/feature/lineSlice';
+import { debounce } from '@/utils';
+import { KonvaEventObject } from 'konva/lib/Node';
 import { ArrowConfig } from 'konva/lib/shapes/Arrow';
 import { LineConfig } from 'konva/lib/shapes/Line';
 import { RectConfig } from 'konva/lib/shapes/Rect';
 import * as React from 'react';
-import { Stage, Layer, Text } from 'react-konva';
-import { useSelector } from 'react-redux';
+import { Stage, Layer, Text, Rect } from 'react-konva';
+import { useDispatch, useSelector } from 'react-redux';
 
 const Home = () => {
   const isDrawing = React.useRef(false);
+  const containerRef = React.useRef<any>();
   const [tool, setTool] = React.useState('pen');
   const [lines, setLines] = React.useState<LineConfig[]>([]);
   const [arrows, setArrows] = React.useState<ArrowConfig[]>([]);
@@ -19,13 +27,28 @@ const Home = () => {
   const [canvasWrapDOM, canvasWrapDOMRef] = useDom<HTMLDivElement>();
 
   const { strokeWidth, stroke, dash, linePattrn } = useSelector(getLineStyle);
-  const { boardPattern } = useSelector(getBoardSetting);
+  const { boardPattern, boardBgColor, boardSize, scale } =
+    useSelector(getBoardSetting);
 
+  const dispatch = useDispatch();
   React.useEffect(() => {
-    if (canvasWrapDOM) {
-      Mounted(true);
-    }
-  }, [canvasWrapDOM]);
+    const config = { attributes: true };
+    // 创建一个观察器实例并传入回调函数
+    const observer = new MutationObserver(([{ target }]) => {
+      const bbox = (target as HTMLDivElement).getBoundingClientRect();
+      console.log(target);
+    });
+    // 以上述配置开始观察目标节点
+    observer.observe(containerRef.current, config);
+    dispatch(
+      setBoardSize({
+        width: containerRef.current.clientWidth,
+        height: containerRef.current.clientHeight
+      })
+    );
+
+    Mounted(true);
+  }, [dispatch]);
 
   const handleMouseDown = React.useCallback(
     (e: any) => {
@@ -64,6 +87,8 @@ const Home = () => {
             break;
           case LinePattern.dash:
           case LinePattern.straight:
+            console.log('xxxx');
+
             linePattrn === LinePattern.dash && (lastLine.dash = dash);
             lastLine.lineCap = 'butt';
             lastLine.lineJoin = 'round';
@@ -157,20 +182,66 @@ const Home = () => {
     isDrawing.current = false;
   }, []);
 
+  const handleMouseLeave = React.useCallback(() => {
+    isDrawing.current = false;
+  }, []);
+
+  const onWheel = (e: any) => {
+    if (e.evt?.deltaY) {
+      console.log(e.evt);
+
+      const { layerX, layerY, clientX, clientY } = e.evt;
+
+      const transformOrigin = `${layerX}px ${layerY}px`;
+
+      //判断浏览器IE，谷歌滑轮事件
+      if (e.evt.deltaY > 0) {
+        if (scale > 0.25) {
+          window.requestAnimationFrame(() => {
+            containerRef.current.style.transformOrigin = transformOrigin;
+            containerRef.current.style.transform = `scale(${scale - 0.25})`;
+          });
+          dispatch(setScale(scale - 0.2));
+        }
+      }
+      if (e.evt.deltaY < 0) {
+        if (scale < 1.25) {
+          window.requestAnimationFrame(() => {
+            containerRef.current.style.transformOrigin = transformOrigin;
+            containerRef.current.style.transform = `scale(${scale + 0.25})`;
+          });
+          dispatch(setScale(scale + 0.2));
+        }
+      }
+    }
+  };
+
   return (
     <div
-      ref={canvasWrapDOMRef as React.LegacyRef<HTMLDivElement>}
-      style={{ height: '100%', background: 'white' }}
-      className='relative rounded-sm overflow-hidden'
+      ref={containerRef}
+      className='relative h-full rounded-sm transition-all'
     >
       {isMounted && (
         <Stage
-          width={canvasWrapDOM.clientWidth}
-          height={canvasWrapDOM.clientHeight}
+          width={boardSize.width}
+          height={boardSize.height}
           onMouseDown={handleMouseDown}
           onMousemove={handleMouseMove}
           onMouseup={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onWheel={debounce(onWheel, 150, true)}
+          className='page-shadow'
         >
+          <Layer>
+            <Rect
+              x={0}
+              y={0}
+              width={boardSize.width}
+              height={boardSize.height}
+              fill={boardBgColor}
+              shadowBlur={10}
+            />
+          </Layer>
           <Layer>
             <Text text='Just start drawing' x={5} y={30} />
             <KonvaLine data={lines} />

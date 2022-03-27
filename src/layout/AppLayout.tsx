@@ -7,21 +7,17 @@ const { Sider, Content, Footer } = Layout;
 
 export default function AppLayout(props: { children: React.ReactNode }) {
   return (
-    <Layout className='h-screen	flex flex-col'>
+    <div
+      className='h-screen flex flex-col bg-secondary'
+      style={{ padding: '0 16px 16px 16px' }}
+    >
       <PageHeader />
-      <Layout>
-        <Sider
-          className='px-4'
-          width='250'
-          style={{ backgroundColor: '#343a40' }}
-        >
+      <div className='flex flex-1'>
+        <div style={{ width: '300px', marginRight: '16px' }}>
           <LeftSider />
-        </Sider>
-        <Content className='bg-secondary pr-3.5'>{props.children}</Content>
-      </Layout>
-      <Footer
-        style={{ height: '16px', backgroundColor: '#343a40', padding: '0' }}
-      />
-    </Layout>
+        </div>
+        <div className='flex-1 bg-gray overflow-hidden'>{props.children}</div>
+      </div>
+    </div>
   );
 }
