@@ -1,16 +1,18 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-export enum TBoardPattern {
-  line = 'line',
-  arrow = 'arrow',
-  rect = 'rect'
-}
-
 export enum LeftToolPattern {
   board = 'board',
   line = 'line',
   arrow = 'arrow',
-  rect = 'rect'
+  rect = 'rect',
+  slect = 'select'
+}
+
+export enum TBoardPattern {
+  line = 'line',
+  arrow = 'arrow',
+  rect = 'rect',
+  slect = 'select'
 }
 
 export type BoardSizeType = {
@@ -30,6 +32,7 @@ interface IState {
   // 左边工具栏
   leftSideTool: LeftToolPattern;
 
+  draggable: boolean;
   scale: number;
 }
 
@@ -42,7 +45,8 @@ const initialState: IState = {
     height: 150
   },
   maxBoardSize: null,
-  scale: 1
+  scale: 1,
+  draggable: false
 };
 
 const brushSlice = createSlice({
@@ -51,6 +55,7 @@ const brushSlice = createSlice({
   reducers: {
     setBoardPattern(state, action) {
       state.boardPattern = action.payload;
+      state.draggable = action.payload === TBoardPattern.slect ? true : false;
     },
     setBoardBgColor(state, action) {
       state.boardBgColor = action.payload;

@@ -1,4 +1,5 @@
 import useDom from '@/Hooks/useDom';
+import useSelectAera from '@/Hooks/useSelectAera';
 import { KonvaArrow, KonvaLine, KonvaRect } from '@/konva-components/Shpe';
 import {
   getBoardSetting,
@@ -7,8 +8,7 @@ import {
   TBoardPattern
 } from '@/store/feature/boardSlice';
 import { getLineStyle, LinePattern } from '@/store/feature/lineSlice';
-import { debounce, windowToCurrentPos } from '@/utils';
-import { KonvaEventObject } from 'konva/lib/Node';
+import Konva from 'konva';
 import { ArrowConfig } from 'konva/lib/shapes/Arrow';
 import { LineConfig } from 'konva/lib/shapes/Line';
 import { RectConfig } from 'konva/lib/shapes/Rect';
@@ -19,6 +19,10 @@ import { useDispatch, useSelector } from 'react-redux';
 const Home = () => {
   const isDrawing = React.useRef(false);
   const containerRef = React.useRef<any>();
+  const stageRef = React.useRef<Konva.Stage | null>();
+  const selectRef = React.useRef<Konva.Rect | null>();
+  const backgroundRectRef = React.useRef<Konva.Rect | null>();
+  const paintLayertRef = React.useRef<Konva.Layer | null>();
   const [tool, setTool] = React.useState('pen');
   const [lines, setLines] = React.useState<LineConfig[]>([]);
   const [arrows, setArrows] = React.useState<ArrowConfig[]>([]);
@@ -26,7 +30,7 @@ const Home = () => {
   const [isMounted, Mounted] = React.useState(false);
 
   const { strokeWidth, stroke, dash, linePattrn } = useSelector(getLineStyle);
-  const { boardPattern, boardBgColor, boardSize, scale } =
+  const { boardPattern, boardBgColor, boardSize, scale, draggable } =
     useSelector(getBoardSetting);
 
   const dispatch = useDispatch();
@@ -45,7 +49,6 @@ const Home = () => {
     (e: any) => {
       isDrawing.current = true;
       const point = e.target.getStage().getPointerPosition();
-
       switch (boardPattern) {
         case TBoardPattern.line:
           setLines((p: any[]) => [...p, { tool, points: [point.x, point.y] }]);
@@ -78,8 +81,6 @@ const Home = () => {
             break;
           case LinePattern.dash:
           case LinePattern.straight:
-            console.log('xxxx');
-
             linePattrn === LinePattern.dash && (lastLine.dash = dash);
             lastLine.lineCap = 'butt';
             lastLine.lineJoin = 'round';
@@ -126,8 +127,6 @@ const Home = () => {
 
   const rectMoveChange = React.useCallback(
     (point) => {
-      console.log('xxx');
-
       setRect((rects: any[]) => {
         let last = rects[rects.length - 1];
         last.fill = stroke;
@@ -203,22 +202,66 @@ const Home = () => {
       }
     }
   };
+  const handleClickTap = (e: any) => {
+    if (isDrawing.current) {
+      return;
+    }
+  };
+  React.useEffect(() => {
+    const stage = stageRef.current;
+    if (
+      [TBoardPattern.line, TBoardPattern.rect, TBoardPattern.arrow].includes(
+        boardPattern
+      )
+    ) {
+      stage?.on('mousedown', handleMouseDown);
+      stage?.on('mousemove', handleMouseMove);
+      stage?.on('mouseup', handleMouseUp);
+      stage?.on('mouseleave', handleMouseLeave);
+    }
+    return () => {
+      console.log('clean up paint');
+      stage?.off('mousedown', handleMouseDown);
+      stage?.off('mousemove', handleMouseMove);
+      stage?.off('mouseup', handleMouseUp);
+      stage?.off('mouseleave', handleMouseLeave);
+    };
+  }, [
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleMouseLeave,
+    boardPattern,
+    isMounted,
+    dispatch
+  ]);
+
+  useSelectAera(
+    stageRef.current as Konva.Stage,
+    paintLayertRef.current as Konva.Layer,
+    backgroundRectRef.current as Konva.Rect,
+    boardPattern
+  );
 
   return (
     <div ref={containerRef} className='relative h-full rounded-sm '>
       {isMounted && (
         <Stage
+          ref={stageRef as React.LegacyRef<Konva.Stage>}
           width={boardSize.width}
           height={boardSize.height}
-          onMouseDown={handleMouseDown}
-          onMousemove={handleMouseMove}
-          onMouseup={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
+          // onMouseDown={handleMouseDown}
+          // onMousemove={handleMouseMove}
+          // onMouseup={handleMouseUp}
+          // onMouseLeave={handleMouseLeave}
           onWheel={onWheel}
+          // onClick={handleClickTap}
+          // onTap={handleClickTap}
           className='page-shadow'
         >
           <Layer>
             <Rect
+              ref={backgroundRectRef as React.LegacyRef<Konva.Rect>}
               x={0}
               y={0}
               width={boardSize.width}
@@ -227,11 +270,11 @@ const Home = () => {
               shadowBlur={10}
             />
           </Layer>
-          <Layer>
+          <Layer ref={paintLayertRef as React.LegacyRef<Konva.Layer>}>
             <Text text='Just start drawing' x={5} y={30} />
-            <KonvaLine data={lines} />
-            <KonvaArrow data={arrows} />
-            <KonvaRect data={rects} />
+            <KonvaLine data={lines} draggable={draggable} />
+            <KonvaArrow data={arrows} draggable={draggable} />
+            <KonvaRect data={rects} draggable={draggable} />
           </Layer>
         </Stage>
       )}
