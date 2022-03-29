@@ -4,20 +4,7 @@ import { LineConfig } from 'konva/lib/shapes/Line';
 import { RectConfig } from 'konva/lib/shapes/Rect';
 import * as React from 'react';
 import { Arrow, Line, Rect } from 'react-konva';
-
-type baseProps = {
-  draggable: boolean;
-};
-
-type KonvaLineProps = {
-  data: LineConfig[];
-} & baseProps;
-type KonvaArrowProps = {
-  data: ArrowConfig[];
-} & baseProps;
-type KonvaRectProps = {
-  data: RectConfig[];
-} & baseProps;
+import { KonvaArrowProps, KonvaLineProps, KonvaRectProps } from '../shape';
 
 export const KonvaLine = React.memo((props: KonvaLineProps) => {
   return (
@@ -52,27 +39,6 @@ export const KonvaArrow = React.memo((props: KonvaArrowProps) => {
           pointerLength={arrow.pointerLength}
           pointerWidth={arrow.pointerWidth}
           draggable={props.draggable}
-        />
-      ))}
-    </>
-  );
-});
-
-export const KonvaRect = React.memo((props: KonvaRectProps) => {
-  return (
-    <>
-      {props.data.map((rect: RectConfig, i: number) => (
-        <Rect
-          key={i}
-          x={rect.x}
-          y={rect.y}
-          width={rect.width}
-          height={rect.height}
-          fill={rect.fill}
-          shadowBlur={rect.shadowBlur}
-          cornerRadius={rect.cornerRadius}
-          draggable={props.draggable}
-          name='rect'
         />
       ))}
     </>

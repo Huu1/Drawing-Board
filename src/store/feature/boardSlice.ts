@@ -36,6 +36,11 @@ interface IState {
   scale: number;
 }
 
+export const couldDraggable: TBoardPattern[] = [
+  TBoardPattern.rect,
+  TBoardPattern.slect
+];
+
 const initialState: IState = {
   boardBgColor: '#fff',
   boardPattern: TBoardPattern.line,
@@ -55,7 +60,7 @@ const brushSlice = createSlice({
   reducers: {
     setBoardPattern(state, action) {
       state.boardPattern = action.payload;
-      state.draggable = action.payload === TBoardPattern.slect ? true : false;
+      state.draggable = couldDraggable.includes(action.payload) ? true : false;
     },
     setBoardBgColor(state, action) {
       state.boardBgColor = action.payload;

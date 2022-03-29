@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { TBoardPattern } from '@/store/feature/boardSlice';
 import Konva from 'konva';
 import { IRect } from 'konva/lib/types';
-let tr: any;
+let tr: Konva.Transformer | null;
+let selectionRectangle: Konva.Rect;
 let x1: number, y1: number, x2: number, y2: number;
 
 const useSelectAera = (
@@ -11,8 +12,6 @@ const useSelectAera = (
   backgroundRect: Konva.Rect,
   boardPattern: TBoardPattern
 ) => {
-  const [selectionRectangle, setSelectionRectangle] = useState<Konva.Rect>();
-
   const handleMouseDown = React.useCallback(
     (e) => {
       // do nothing if we mousedown on any shape
@@ -29,7 +28,7 @@ const useSelectAera = (
       selectionRectangle?.width(0);
       selectionRectangle?.height(0);
     },
-    [backgroundRect, selectionRectangle, stage]
+    [backgroundRect, stage]
   );
   const handleMouseMove = React.useCallback(
     (e) => {
@@ -48,7 +47,7 @@ const useSelectAera = (
         height: Math.abs(y2 - y1)
       });
     },
-    [selectionRectangle, stage]
+    [stage]
   );
   const handleMouseUp = React.useCallback(
     (e) => {
@@ -68,9 +67,9 @@ const useSelectAera = (
       let selected = shapes.filter((shape: { getClientRect: () => IRect }) =>
         Konva.Util.haveIntersection(box, shape.getClientRect())
       );
-      tr.nodes(selected);
+      tr?.nodes(selected);
     },
-    [selectionRectangle, stage]
+    [stage]
   );
 
   const handleClick = React.useCallback(
@@ -82,7 +81,7 @@ const useSelectAera = (
 
       // if click on empty area - remove all selections
       if (e.target === stage) {
-        tr.nodes([]);
+        tr?.nodes([]);
         return;
       }
 
@@ -93,40 +92,37 @@ const useSelectAera = (
 
       // do we pressed shift or ctrl?
       const metaPressed = e.evt.shiftKey || e.evt.ctrlKey || e.evt.metaKey;
-      const isSelected = tr.nodes().indexOf(e.target) >= 0;
+      const isSelected = tr && tr.nodes().indexOf(e.target) >= 0;
 
       if (!metaPressed && !isSelected) {
         // if no key pressed and the node is not selected
         // select just one
-        tr.nodes([e.target]);
+        tr?.nodes([e.target]);
       } else if (metaPressed && isSelected) {
         // if we pressed keys and node was selected
         // we need to remove it from selection:
-        const nodes = tr.nodes().slice(); // use slice to have new copy of array
+        const nodes = tr?.nodes().slice(); // use slice to have new copy of array
         // remove node from array
-        nodes.splice(nodes.indexOf(e.target), 1);
-        tr.nodes(nodes);
+        nodes && nodes.splice(nodes.indexOf(e.target), 1);
+        tr?.nodes(nodes!);
       } else if (metaPressed && !isSelected) {
         // add the node into selection
-        const nodes = tr.nodes().concat([e.target]);
-        tr.nodes(nodes);
+        const nodes = tr?.nodes().concat([e.target]);
+        tr?.nodes(nodes!);
       }
     },
-    [selectionRectangle, stage]
+    [stage]
   );
 
   React.useEffect(() => {
     if (boardPattern === TBoardPattern.slect) {
-      if (!tr) {
-        tr = new Konva.Transformer();
-        paintLayer?.add(tr);
-        let selectionRectangle = new Konva.Rect({
-          fill: 'rgba(0,0,255,0.5)',
-          visible: false
-        });
-        paintLayer?.add(selectionRectangle);
-        setSelectionRectangle(selectionRectangle);
-      }
+      tr = new Konva.Transformer();
+      selectionRectangle = new Konva.Rect({
+        fill: '#a8a8f7c0',
+        visible: false
+      });
+      paintLayer?.add(tr);
+      paintLayer?.add(selectionRectangle);
       stage?.on('mousedown', handleMouseDown);
       stage?.on('mousemove', handleMouseMove);
       stage?.on('mouseup', handleMouseUp);
@@ -137,16 +133,19 @@ const useSelectAera = (
         stage?.off('mousemove', handleMouseMove);
         stage?.off('mouseup', handleMouseUp);
         stage?.off('click', handleClick);
+        selectionRectangle?.destroy();
+        tr?.destroy();
+        tr = null;
       };
     }
   }, [
-    boardPattern,
     handleClick,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
     paintLayer,
-    stage
+    stage,
+    boardPattern
   ]);
 };
 
