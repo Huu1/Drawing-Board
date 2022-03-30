@@ -1,3 +1,12 @@
 .page-shadow {
   box-shadow: 0 0 5px rgb(0 0 0 0), 0 0 20px rgb(0 0 0 0) inset;
 }
+
+.text-aera {
+  border: none;
+  outline: none;
+  resize: none;
+  margin: 0;
+  overflow: hidden;
+  background: none;
+}

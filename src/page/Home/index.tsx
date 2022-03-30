@@ -2,6 +2,7 @@ import useDom from '@/Hooks/useDom';
 import useSelectAera from '@/Hooks/useSelectAera';
 import { KonvaRect } from '@/konva-components/Rect';
 import { KonvaArrow, KonvaLine } from '@/konva-components/Shpe';
+import { KonvaText } from '@/konva-components/Text';
 import {
   couldDraggable,
   getBoardSetting,
@@ -287,6 +288,12 @@ const Home = () => {
             <KonvaLine data={lines} draggable={draggable} />
             <KonvaArrow data={arrows} draggable={draggable} />
             <KonvaRect
+              stage={stageRef.current as Konva.Stage}
+              boardPattern={boardPattern}
+              draggable={draggable}
+              paintLayertRef={paintLayertRef.current as Konva.Layer}
+            />
+            <KonvaText
               stage={stageRef.current as Konva.Stage}
               boardPattern={boardPattern}
               draggable={draggable}

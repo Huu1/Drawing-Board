@@ -5,14 +5,16 @@ export enum LeftToolPattern {
   line = 'line',
   arrow = 'arrow',
   rect = 'rect',
-  slect = 'select'
+  slect = 'select',
+  text = 'text'
 }
 
 export enum TBoardPattern {
   line = 'line',
   arrow = 'arrow',
   rect = 'rect',
-  slect = 'select'
+  slect = 'select',
+  text = 'text'
 }
 
 export type BoardSizeType = {
@@ -38,7 +40,8 @@ interface IState {
 
 export const couldDraggable: TBoardPattern[] = [
   TBoardPattern.rect,
-  TBoardPattern.slect
+  TBoardPattern.slect,
+  TBoardPattern.text
 ];
 
 const initialState: IState = {

@@ -36,6 +36,7 @@ export function Header(props: any) {
         <Radio.Button value={LeftToolPattern.line}>画笔</Radio.Button>
         <Radio.Button value={LeftToolPattern.arrow}>箭头</Radio.Button>
         <Radio.Button value={LeftToolPattern.rect}>矩形</Radio.Button>
+        <Radio.Button value={LeftToolPattern.text}>文字</Radio.Button>
         <Radio.Button value={LeftToolPattern.slect}>选中</Radio.Button>
         {/* <Radio.Button value='eraser'>橡皮擦</Radio.Button>
         <Radio.Button value='trash'>删除</Radio.Button> */}

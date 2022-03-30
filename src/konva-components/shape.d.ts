@@ -18,3 +18,6 @@ export type KonvaArrowProps = {
 export type KonvaRectProps = {
   // data: RectConfig[];
 } & baseProps;
+export type KonvaTextProps = {
+  // data: RectConfig[];
+} & baseProps;
