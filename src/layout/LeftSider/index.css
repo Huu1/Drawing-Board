@@ -1,0 +1,14 @@
+.side-menu {
+  min-width: 72px;
+  padding: 16px 8px;
+}
+
+.side-menu:hover {
+  color: #48aff0;
+  background-color: rgba(19, 124, 189, 0.2);
+}
+
+.side-menu-checked {
+  color: #48aff0;
+  background-color: rgba(19, 124, 189, 0.2);
+}

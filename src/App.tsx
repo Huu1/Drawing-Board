@@ -5,7 +5,6 @@ import { Route, Routes } from 'react-router-dom';
 import Home from './page/Home';
 import AppLayout from './layout/AppLayout';
 import { Test } from './page/test';
-import Demo from './page/demo';
 
 function App() {
   return (
@@ -13,7 +12,6 @@ function App() {
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/test' element={<Test />} />
-        <Route path='/demo' element={<Demo />} />
       </Routes>
     </AppLayout>
   );

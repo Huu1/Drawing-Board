@@ -1,95 +1,113 @@
-import useDom from '@/Hooks/useDom';
 import { getBoardSetting, TBoardPattern } from '@/store/feature/boardSlice';
-import { getBrushSetting } from '@/store/feature/brushSlice';
-import * as React from 'react';
+import { ArrowConfig } from 'konva/lib/shapes/Arrow';
+import { ImageConfig } from 'konva/lib/shapes/Image';
+import { RectConfig } from 'konva/lib/shapes/Rect';
+import { TextConfig } from 'konva/lib/shapes/Text';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Arrow, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  MouseCbRetuen,
-  useCanvasInit,
-  useCanvasMouseMoveEvent
-} from './useCanvas';
-let data: any;
 export default function Home() {
-  const dispatch = useDispatch();
-  const { brushWidth, brushColor } = useSelector(getBrushSetting);
-  const { boardPattern, boardBgColor, boardSize, canvas, ctx } =
-    useSelector(getBoardSetting);
+  // const dispatch = useDispatch();
+  // const { boardPattern, boardBgColor, boardSize, canvas, ctx } =
+  //   useSelector(getBoardSetting);
 
-  const [canvasWrapDOM, canvasWrapDOMRef] = useDom<HTMLDivElement>();
-  // const [canvasDOM, canvasRef] = useDom<HTMLCanvasElement>();
-
-  useCanvasInit(canvasWrapDOM, dispatch);
-
-  // 画笔模式
-  const brush = React.useCallback(
-    ({ ctx, curInfo, lastInfo }: MouseCbRetuen) => {
-      ctx.beginPath();
-      ctx.moveTo(lastInfo.clientX, lastInfo.clientY);
-      ctx.lineTo(curInfo.clientX, curInfo.clientY);
-
-      ctx.strokeStyle = brushColor;
-      ctx.lineWidth = brushWidth;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-    },
-    [brushWidth, brushColor]
+  const StageRef = useRef<HTMLDivElement>();
+  const [size, setSize] = useState<{ width: number; height: number } | null>(
+    null
   );
 
-  // 直线
-  const line = React.useCallback(
-    ({ ctx, curInfo, lastInfo }: MouseCbRetuen) => {
-      // data = ctx.getImageData(0, 0, canvas!.width, canvas!.height);
-      // ctx.clearRect(0, 0, 600, 600);
-      // ctx.moveTo(lastInfo.clientX, lastInfo.clientY);
-      // ctx.lineTo(curInfo.clientX, curInfo.clientY);
-      // ctx.putImageData(data, 0, 0);
-      // ctx.stroke();
-      // data = ctx.getImageData(0, 0, canvas!.width, canvas!.height);
-      // ctx.lineCap = 'round';
-      // ctx.lineJoin = 'round';
-      // ctx.stroke();
-    },
-    [brushWidth, brushColor, canvas]
-  );
+  const [photos, setPhotos] = useState<ImageConfig[]>([]);
+  const [texts, setTests] = useState<TextConfig[]>([]);
+  const [arrows, setArrows] = useState<ArrowConfig[]>([]);
+  const [rects, setRects] = useState<RectConfig[]>([]);
 
-  const handle = React.useCallback(
-    (context: MouseCbRetuen) => {
-      switch (boardPattern) {
-        case TBoardPattern.brush:
-          brush(context);
-          break;
-        case TBoardPattern.line:
-          line(context);
-          break;
-        default:
-          break;
-      }
-    },
-    [brush, boardPattern, line]
-  );
+  const handleMouseDown = useCallback(() => {}, []);
+  const handleMouseMove = useCallback(() => {}, []);
+  const handleMouseUp = useCallback(() => {}, []);
 
-  useCanvasMouseMoveEvent(
-    canvas as HTMLCanvasElement,
-    ctx as CanvasRenderingContext2D,
-    handle
-  );
+  useEffect(() => {
+    const dom = StageRef.current as HTMLElement;
+    setSize({
+      width: dom.clientWidth,
+      height: dom.clientHeight
+    });
+    const config = { attributes: true };
+    const callback = function (mutationsList: any, observer: any) {
+      console.log(mutationsList);
+    };
+    // 创建一个观察器实例并传入回调函数
+    const observer = new MutationObserver(callback);
 
-  // React.useEffect(() => {
-  //   if (canvas) {
-  //     const { height, width } = boardSize;
-  //     canvas.setAttribute('width', width + 'px');
-  //     canvas.setAttribute('height', height + 'px');
-  //   }
-  // }, [boardSize, canvas]);
+    // 以上述配置开始观察目标节点
+    observer.observe(document, config);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   return (
-    <>
-      <div
-        ref={canvasWrapDOMRef as React.LegacyRef<HTMLDivElement>}
-        style={{ height: '100%' }}
-        className='relative rounded-sm overflow-hidden'
-      ></div>
-    </>
+    <div className='h-full' ref={StageRef as React.LegacyRef<HTMLDivElement>}>
+      {size && (
+        <Stage
+          width={size.width}
+          height={size.height}
+          onMouseDown={handleMouseDown}
+          onMousemove={handleMouseMove}
+          onMouseup={handleMouseUp}
+        >
+          <Layer>
+            <Rect
+              x={0}
+              y={0}
+              // width={boardSize.width}
+              // height={boardSize.height}
+              // fill={boardBgColor}
+              shadowBlur={10}
+              name='background'
+            />
+          </Layer>
+          <Layer>
+            {arrows.map((arrow: ArrowConfig, i: number) => (
+              <Arrow
+                key={i}
+                points={arrow.points}
+                fill={arrow.fill}
+                stroke={arrow.stroke}
+                strokeWidth={arrow.strokeWidth}
+                pointerLength={arrow.pointerLength}
+                pointerWidth={arrow.pointerWidth}
+                name='arrow'
+              />
+            ))}
+            {texts.map((text: TextConfig, i: number) => (
+              <Text
+                key={i}
+                x={text.x}
+                y={text.y}
+                text={text.text}
+                fontSize={text.fontSize}
+                fill={text.fill}
+                shadowBlur={text.shadowBlur}
+                cornerRadius={text.cornerRadius}
+                name='text'
+              />
+            ))}
+            {rects.map((rect: RectConfig, i: number) => (
+              <Rect
+                key={i}
+                x={rect.x}
+                y={rect.y}
+                width={rect.width}
+                height={rect.height}
+                fill={rect.fill}
+                shadowBlur={rect.shadowBlur}
+                cornerRadius={rect.cornerRadius}
+                name='rect'
+              />
+            ))}
+          </Layer>
+        </Stage>
+      )}
+    </div>
   );
 }

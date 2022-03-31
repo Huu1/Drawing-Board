@@ -1,27 +1,53 @@
 import BrushTool from '@/page/Home/tool/brush';
-import BoradTool from '@/page/Home/tool/board';
 import { getBoardSetting, LeftToolPattern } from '@/store/feature/boardSlice';
-import { Radio } from 'antd';
-import React from 'react';
+import { Button, Radio } from 'antd';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import './index.css';
+
+const sideMemu = [
+  { title: '背景', icon: '', value: 'background' },
+  { title: 'resize', icon: '', value: 'resize' }
+];
+
 const LeftSider = () => {
-  const { leftSideTool } = useSelector(getBoardSetting);
-  const render = () => {
-    let result;
-    switch (leftSideTool) {
-      case LeftToolPattern.board:
-        result = <BoradTool />;
-        break;
-      case LeftToolPattern.brush:
-        result = <BrushTool />;
-        break;
-      default:
-        break;
-    }
-    return result;
-  };
-  return <div className='bg-dark p-2 h-full rounded-sm'>{render()}</div>;
+  const [checked, setChecked] = useState<any>();
+
+  return (
+    <div className='flex h-full'>
+      <div className='bg-primary flex flex-col '>
+        {sideMemu.map((item) => {
+          return (
+            <div
+              key={item.value}
+              className={`flex flex-col justify-center	items-center cursor-pointer	side-menu ${
+                checked === item.value ? 'side-menu-checked' : ''
+              }`}
+              onClick={() => setChecked(item.value)}
+            >
+              <span>22</span>
+              <span>{item.title}</span>
+            </div>
+          );
+        })}
+      </div>
+      {checked && (
+        <div className='w-64 relative' id='side-nav'>
+          <div
+            onClick={() => {
+              setChecked(null);
+              console.log('xx');
+            }}
+            className='absolute right-0 top-1/2'
+            style={{ right: '-40px', zIndex: 1 }}
+          >
+            关闭
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default React.memo(LeftSider);
