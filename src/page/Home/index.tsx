@@ -1,4 +1,5 @@
 import { getBoardSetting, TBoardPattern } from '@/store/feature/boardSlice';
+import { containResize, setRatioCenter } from '@/utils';
 import Konva from 'konva';
 import { ArrowConfig } from 'konva/lib/shapes/Arrow';
 import { ImageConfig } from 'konva/lib/shapes/Image';
@@ -30,13 +31,6 @@ type ACTIONTYPE =
       };
     }
   | {
-      type: 'boardPostion';
-      payload: {
-        stageWidth: number;
-        stageHeight: number;
-      };
-    }
-  | {
       type: 'scale';
       payload: {
         stageWidth: number;
@@ -49,104 +43,22 @@ function reducer(state: typeof initialState, action: ACTIONTYPE) {
   switch (action.type) {
     case 'boardSize':
       return { ...state, boardSize: action.payload };
-    case 'boardPostion':
-      const { stageWidth, stageHeight } = action.payload;
-      let x: number, y: number;
-      x = (stageWidth - boardWidth * state.scale.x) / 2;
-      y = (stageHeight - boardHeight * state.scale.y) / 2;
-      return {
-        ...state
-        // boardPostion: {
-        //   x,
-        //   y
-        // }
-      };
     case 'scale':
-      /**
-       * @param {Number} sx 固定盒子的x坐标,sy 固定盒子的y左标
-       * @param {Number} box_w 固定盒子的宽, box_h 固定盒子的高
-       * @param {Number} source_w 原图片的宽, source_h 原图片的高
-       * @return {Object} {drawImage的参数，缩放后图片的x坐标，y坐标，宽和高},对应drawImage(imageResource, dx, dy, dWidth, dHeight)
-       */
-      const containImg = (
-        sx: number,
-        sy: number,
-        box_w: number,
-        box_h: number,
-        source_w: number,
-        source_h: number
-      ) => {
-        let dx = sx,
-          dy = sy,
-          dWidth = box_w,
-          dHeight = box_h;
-        if (source_w > source_h || (source_w === source_h && box_w < box_h)) {
-          dHeight = (source_h * dWidth) / source_w;
-          dy = sy + (box_h - dHeight) / 2;
-        } else if (
-          source_w < source_h ||
-          (source_w === source_h && box_w > box_h)
-        ) {
-          dWidth = (source_w * dHeight) / source_h;
-          dx = sx + (box_w - dWidth) / 2;
-        }
-        return {
-          dx,
-          dy,
-          dWidth,
-          dHeight
-        };
-      };
-
-      const obj = containImg(
-        0,
-        0,
-        action.payload.stageWidth,
-        action.payload.stageHeight,
+      const { stageWidth, stageHeight } = action.payload;
+      const { width: ScaleWwidth, height: ScaleHeight } = containResize(
+        stageWidth,
+        stageHeight,
         boardWidth,
         boardHeight
       );
-
-      const { dHeight, dWidth } = obj;
-
-      console.log(dHeight, dWidth);
-
-      let ratio = 1;
-      if (dWidth === dHeight) {
-      } else if (dWidth === action.payload.stageWidth) {
-        ratio = (dWidth - 20) / boardWidth;
-      } else if (dHeight === action.payload.stageHeight) {
-        ratio = (dHeight - 50) / boardHeight;
-      }
-      console.log(ratio);
-
-      // const { stageWidth, stageHeight } = action.payload;
-      // const { boardWidth, boardHeight } = state.boardSize;
-      // let ratio;
-      // if (boardHeight < boardWidth) {
-      //   let idealHeight = action.payload.stageHeight - 40;
-      //   ratio = idealHeight / boardHeight;
-      // } else {
-      //   let idealWidth = action.payload.stageWidth - 40;
-      //   ratio = idealWidth / boardWidth;
-      // }
-
-      let px: number, py: number;
-      px = (action.payload.stageWidth - boardWidth * ratio) / 2;
-      py = (action.payload.stageHeight - boardHeight * ratio) / 2;
-
-      // // console.log();
-
-      // console.log({
-      //   scale: {
-      //     x: ratio,
-      //     y: ratio
-      //   },
-      //   boardPostion: {
-      //     x: px,
-      //     y: py
-      //   }
-      // });
+      const { ratio, x, y } = setRatioCenter(
+        ScaleWwidth,
+        ScaleHeight,
+        stageWidth,
+        stageHeight,
+        boardWidth,
+        boardHeight
+      );
 
       return {
         ...state,
@@ -155,12 +67,12 @@ function reducer(state: typeof initialState, action: ACTIONTYPE) {
           y: ratio
         },
         boardPostion: {
-          x: px,
-          y: py
+          x: x,
+          y: y
         }
       };
     default:
-      throw new Error();
+      throw new Error('无对应的action.type');
   }
 }
 
@@ -204,30 +116,21 @@ export default function Home() {
 
     const resizeHandle = () => {
       setStageSize({
-        width: dom.clientWidth,
-        height: dom.clientHeight
+        width: dom.offsetWidth,
+        height: dom.offsetHeight
       });
-
       dispatch({
         type: 'boardSize',
         payload: {
-          height: 300,
-          width: 1280
+          height: 1200,
+          width: 400
         }
       });
-      // dispatch({
-      //   type: 'boardPostion',
-      //   payload: {
-      //     stageWidth: dom.clientWidth,
-      //     stageHeight: dom.clientHeight
-      //   }
-      // });
-
       dispatch({
         type: 'scale',
         payload: {
-          stageWidth: dom.clientWidth,
-          stageHeight: dom.clientHeight
+          stageWidth: dom.offsetWidth,
+          stageHeight: dom.offsetHeight
         }
       });
     };

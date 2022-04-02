@@ -13,8 +13,13 @@ export default function AppLayout(props: { children: React.ReactNode }) {
       <div className='flex-1 flex'>
         <LeftSider />
         <main className='flex-1 flex flex-col overflow-hidden' id='main'>
-          <div className='bg-primary'>tool</div>
-          <div className='flex-auto bg-secondary '>{props.children}</div>
+          {/* <div className='bg-primary'>tool</div> */}
+          <div
+            className='bg-secondary '
+            style={{ height: 'calc(100vh - 48px)' }}
+          >
+            {props.children}
+          </div>
         </main>
       </div>
     </div>
