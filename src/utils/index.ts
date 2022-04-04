@@ -1,3 +1,6 @@
+export const widthMargin = 20;
+export const heightMargin = 80;
+
 export const windowToCanvas = (x: number, y: number) => {};
 /**
  *
@@ -42,9 +45,6 @@ export const setRatioCenter = (
   boardWidth: number,
   boardHeight: number
 ) => {
-  const widthMargin = 20;
-  const heightMargin = 60;
-
   let ratio = 1;
   if (width === height) {
     ratio = (width - widthMargin) / boardWidth;
@@ -64,14 +64,43 @@ export const setRatioCenter = (
   } else {
     console.log('otherrrrrrrrr');
   }
+  ratio = +ratio.toFixed(2);
 
-  let x: number, y: number;
-  x = (stageWidth - boardWidth * ratio) / 2;
-  y = (stageHeight - boardHeight * ratio) / 2;
+  const { x, y } = calcPosition(
+    stageWidth,
+    stageHeight,
+    boardWidth * ratio,
+    boardHeight * ratio
+  );
 
   return {
     ratio,
     x,
     y
+  };
+};
+
+export const calcPosition = (
+  outWidth: number,
+  outHeight: number,
+  innerWidth: number,
+  innerHeight: number
+) => {
+  let x: number, y: number;
+  x = (outWidth - innerWidth) / 2;
+  y = (outHeight - innerHeight) / 2;
+
+  return {
+    x,
+    y
+  };
+};
+
+export const calcStageSize = (width: number, height: number) => {
+  let stageWidth = width % 2 !== 0 ? width - 1 : width;
+  let stageHeight = height % 2 !== 0 ? height - 1 : height;
+  return {
+    stageWidth,
+    stageHeight
   };
 };

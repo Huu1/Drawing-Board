@@ -8,19 +8,14 @@ const { Sider, Content, Footer } = Layout;
 
 export default function AppLayout(props: { children: React.ReactNode }) {
   return (
-    <div className='h-screen flex flex-col overflow-hidden'>
+    <div className='h-screen flex flex-col font-sans'>
       <Header />
-      <div className='flex-1 flex'>
-        <LeftSider />
-        <main className='flex-1 flex flex-col overflow-hidden' id='main'>
-          {/* <div className='bg-primary'>tool</div> */}
-          <div
-            className='bg-secondary '
-            style={{ height: 'calc(100vh - 48px)' }}
-          >
-            {props.children}
-          </div>
-        </main>
+
+      <div style={{ height: 'calc(100vh - 48px)' }}>
+        <div className='flex  w-full h-full max-h-screen	'>
+          <LeftSider />
+          {props.children}
+        </div>
       </div>
     </div>
   );
