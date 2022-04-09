@@ -12,6 +12,10 @@ import {
 
 import './index.css';
 
+export type sideProps = {
+  style: React.CSSProperties;
+};
+
 const recommendSizeList = [
   {
     title: '朋友圈-封面',
@@ -65,7 +69,7 @@ const recommendSizeList = [
   }
 ];
 
-const BoardSize = () => {
+const BoardSize = ({ style }: sideProps) => {
   const { boardSize } = useSelector(getBoardSetting);
   const dispatch = useDispatch();
 
@@ -81,7 +85,7 @@ const BoardSize = () => {
     dispatch(setBoardSize(size));
   };
   return (
-    <div>
+    <div style={style}>
       <div>
         宽：
         <InputNumber

@@ -1,24 +1,43 @@
+import URLImage, { ImageElement, URLImageProps } from '@/components/Image';
 import { ScaleTool } from '@/components/ScaleTool';
+import { splitCode } from '@/layout/LeftSider/Photos';
 import { getBoardSetting } from '@/store/feature/boardSlice';
 import {
   calcPosition,
   calcStageSize,
+  calculateAspectRatioFit,
   containResize,
   heightMargin,
+  innerWtihOuterBoxRatio,
   setRatioCenter,
   widthMargin
 } from '@/utils';
 import Konva from 'konva';
+import { NodeConfig } from 'konva/lib/Node';
 import { ArrowConfig } from 'konva/lib/shapes/Arrow';
 import { ImageConfig } from 'konva/lib/shapes/Image';
 import { RectConfig } from 'konva/lib/shapes/Rect';
 import { TextConfig } from 'konva/lib/shapes/Text';
-import { StageConfig } from 'konva/lib/Stage';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { Arrow, Layer, Line, Rect, Stage, Text } from 'react-konva';
+import {
+  Arrow,
+  Group,
+  Image,
+  Layer,
+  Line,
+  Rect,
+  Stage,
+  Text,
+  Transformer
+} from 'react-konva';
 import { useDispatch, useSelector } from 'react-redux';
+import useImage from 'use-image';
 
 import './index.css';
+
+export enum ShpaeType {
+  image = 'image'
+}
 
 const reducerInitialState = {
   boardSize: { width: 0, height: 0 },
@@ -84,6 +103,13 @@ function reducer(state: typeof reducerInitialState, action: ACTIONTYPE) {
         boardHeight
       );
 
+      const res = calculateAspectRatioFit(
+        boardWidth,
+        boardHeight,
+        stageWidth,
+        stageHeight
+      );
+
       return {
         ...state,
         scale: {
@@ -133,18 +159,31 @@ export default function Home() {
   const StageWrapRef = useRef<HTMLDivElement>();
   const stageRef = useRef<Konva.Stage | null>();
   const boardRef = useRef<Konva.Rect | null>();
+  const maskRef = useRef<Konva.Layer | null>();
+  const GROUPRef = useRef<Konva.Group | null>();
+  const layerRef = useRef<Konva.Layer | null>();
   const defaultStageSize = useRef<Size | null>();
 
-  const [photos, setPhotos] = useState<ImageConfig[]>([]);
-  const [texts, setTests] = useState<TextConfig[]>([]);
-  const [arrows, setArrows] = useState<ArrowConfig[]>([]);
-  const [rects, setRects] = useState<RectConfig[]>([]);
+  const ref = useRef(false);
 
-  const handleMouseDown = useCallback(() => {}, []);
+  const trRef = useRef<Konva.Transformer>();
+
+  const [selectedId, selectShape] = useState<number | null>(null);
+
+  const handleClick = useCallback((e) => {}, []);
+  const handleMouseDown = useCallback((e) => {
+    const clickedOnEmpty =
+      e.target === e.target.getStage() || e.target === boardRef.current;
+    if (clickedOnEmpty) {
+      selectShape(null);
+    }
+  }, []);
   const handleMouseMove = useCallback(() => {}, []);
   const handleMouseUp = useCallback(() => {}, []);
 
   const [board, dispatch] = useReducer(reducer, reducerInitialState);
+
+  const [elements, setElements] = useState<Array<ImageElement>>([]);
 
   const resizeHandle = useCallback(() => {
     const dom = StageWrapRef.current as HTMLElement;
@@ -165,7 +204,6 @@ export default function Home() {
       }
     });
 
-    console.log(stageWidth);
     stageRef.current?.width(stageWidth);
     stageRef.current?.height(stageHeight);
 
@@ -186,11 +224,6 @@ export default function Home() {
   }, [resizeHandle]);
 
   useEffect(() => {
-    // console.log((StageWrapRef.current?.scrollLeft = 20));
-    // console.log(StageWrapRef.current?.scrollTop);
-  }, [board.scale]);
-
-  useEffect(() => {
     const observerSideDom = () => {
       const config = { attributes: true };
       const callback = function () {
@@ -208,6 +241,13 @@ export default function Home() {
 
     return () => observer?.disconnect();
   }, [resizeHandle]);
+
+  useEffect(() => {
+    // const mask = maskRef.current as Konva.Layer;
+    // let tr = new Konva.Transformer();
+    // mask.add(tr);
+    // trRef.current = tr;
+  }, []);
 
   const onScaleChange = (scale: number, resize = false) => {
     const { boardSize } = board;
@@ -279,6 +319,147 @@ export default function Home() {
     }
   };
 
+  const dragImg = (e: any) => {};
+
+  useEffect(() => {
+    const stage = stageRef.current as Konva.Stage;
+    let con = stage.container();
+
+    function dragover(e: { preventDefault: () => void }) {
+      e.preventDefault(); // !important
+    }
+
+    function drop(e: any) {
+      const stage = stageRef.current as Konva.Stage;
+
+      let itemURL = e.dataTransfer?.getData('text/plain') as string;
+
+      const [height, src] = itemURL.split(splitCode);
+
+      e.preventDefault();
+      stage.setPointersPositions(e);
+
+      const { x: cx, y: cy } = stage.getPointerPosition() as {
+        x: number;
+        y: number;
+      };
+
+      const id = Date.now();
+      setElements((elements) => [
+        ...elements,
+        {
+          ratio: innerWtihOuterBoxRatio(
+            cx,
+            cy,
+            board.boardPostion.x,
+            board.boardPostion.y,
+            board.boardSize.width * board.scale.x,
+            board.boardSize.height * board.scale.y
+          ),
+          shapeProps: {
+            x: cx,
+            y: cy,
+            src
+          },
+          id,
+          height,
+          shapeType: ShpaeType.image
+        } as unknown as ImageElement
+      ]);
+    }
+
+    con.addEventListener('dragover', dragover);
+    con.addEventListener('drop', drop);
+    return () => {
+      con.removeEventListener('dragover', dragover);
+      con.removeEventListener('drop', drop);
+    };
+  }, [board]);
+
+  useEffect(() => {
+    if (ref.current) {
+      setElements((p) => {
+        let result = p.map((item) => {
+          return {
+            ...item,
+            shapeProps: {
+              ...item.shapeProps,
+              x:
+                board.boardPostion.x +
+                board.boardSize.width * board.scale.x * item.ratio.x,
+              y:
+                board.boardPostion.y +
+                board.boardSize.height * board.scale.y * item.ratio.y
+            }
+          };
+        });
+        return result;
+      });
+    } else {
+      ref.current = true;
+    }
+  }, [board]);
+
+  const shapeChange = useCallback(
+    (newAttrs: Konva.ImageConfig, index: number) => {
+      const { boardPostion, boardSize } = board;
+
+      setElements((elements) => {
+        const all = elements.slice();
+        const target = all[index];
+        target.shapeProps = newAttrs;
+        target.ratio = innerWtihOuterBoxRatio(
+          newAttrs.x as number,
+          newAttrs.y as number,
+          boardPostion.x,
+          boardPostion.y,
+          boardSize.width * board.scale.x,
+          boardSize.height * board.scale.y
+        );
+        return all;
+      });
+    },
+    [board]
+  );
+
+  const renderElements = useCallback(() => {
+    return elements?.map((item, index) => {
+      switch (item.shapeType) {
+        case ShpaeType.image:
+          return (
+            <URLImage
+              key={index}
+              {...item}
+              scale={{
+                x: board.scale.x,
+                y: board.scale.y
+              }}
+              onChange={(newAttrs: Konva.ImageConfig) =>
+                shapeChange(newAttrs, index)
+              }
+              onSelect={(id?: number) => {
+                selectShape(id && typeof id === 'number' ? id : item.id);
+              }}
+            />
+          );
+        default:
+          break;
+      }
+    });
+  }, [board.scale.x, board.scale.y, elements, shapeChange]);
+
+  useEffect(() => {
+    if (selectedId) {
+      setTimeout(() => {
+        const shape = stageRef.current?.find(`#${selectedId}`);
+        if (shape) {
+          trRef.current?.nodes(shape);
+          trRef.current?.getLayer()?.batchDraw();
+        }
+      });
+    }
+  }, [selectedId]);
+
   return (
     <div
       style={{ flex: '1' }}
@@ -289,19 +470,23 @@ export default function Home() {
           className='absolute  top-0  left-0  w-full h-full overflow-x-hidden overflow-y-auto'
           ref={StageWrapRef as React.LegacyRef<HTMLDivElement>}
         >
-          {/* <div className='bg-primary'>tool</div> */}
-          <div className='relative' id='test'>
-            {/* {stageSize && ( */}
+          <div className='relative'>
             <Stage
               ref={stageRef as React.LegacyRef<Konva.Stage>}
-              // width={stageSize.width}
-              // height={stageSize.height}
               onMouseDown={handleMouseDown}
               onMousemove={handleMouseMove}
               onMouseup={handleMouseUp}
+              // onClick={handleClick}
               className='stageClass'
+              onDragEnd={dragImg}
             >
-              <Layer>
+              <Layer
+                ref={layerRef as React.LegacyRef<Konva.Layer>}
+                clipHeight={board.boardSize.height * board.scale.y}
+                clipWidth={board.boardSize.width * board.scale.x}
+                clipY={board.boardPostion.y}
+                clipX={board.boardPostion.x}
+              >
                 <Rect
                   ref={boardRef as React.LegacyRef<Konva.Rect>}
                   x={board.boardPostion.x}
@@ -309,7 +494,7 @@ export default function Home() {
                   width={board.boardSize.width}
                   height={board.boardSize.height}
                   fill={'white'}
-                  strokeWidth={4 / board.scale.x} // border width: ;
+                  // strokeWidth={4 / board.scale.x} // border width: ;
                   stroke='#E0E2E6' // border color
                   name='background'
                   scale={{
@@ -317,47 +502,24 @@ export default function Home() {
                     y: board.scale.y
                   }}
                 />
-                {arrows.map((arrow: ArrowConfig, i: number) => (
-                  <Arrow
-                    key={i}
-                    points={arrow.points}
-                    fill={arrow.fill}
-                    stroke={arrow.stroke}
-                    strokeWidth={arrow.strokeWidth}
-                    pointerLength={arrow.pointerLength}
-                    pointerWidth={arrow.pointerWidth}
-                    name='arrow'
+                {renderElements()}
+              </Layer>
+              <Layer ref={maskRef as React.LegacyRef<Konva.Layer>}>
+                {selectedId && (
+                  <Transformer
+                    ref={trRef as React.LegacyRef<Konva.Transformer>}
+                    keepRatio={false}
+                    boundBoxFunc={(oldBox, newBox) => {
+                      // limit resize
+                      if (newBox.width < 10 || newBox.height < 10) {
+                        return oldBox;
+                      }
+                      return newBox;
+                    }}
                   />
-                ))}
-                {texts.map((text: TextConfig, i: number) => (
-                  <Text
-                    key={i}
-                    x={text.x}
-                    y={text.y}
-                    text={text.text}
-                    fontSize={text.fontSize}
-                    fill={text.fill}
-                    shadowBlur={text.shadowBlur}
-                    cornerRadius={text.cornerRadius}
-                    name='text'
-                  />
-                ))}
-                {rects.map((rect: RectConfig, i: number) => (
-                  <Rect
-                    key={i}
-                    x={rect.x}
-                    y={rect.y}
-                    width={rect.width}
-                    height={rect.height}
-                    fill={rect.fill}
-                    shadowBlur={rect.shadowBlur}
-                    cornerRadius={rect.cornerRadius}
-                    name='rect'
-                  />
-                ))}
+                )}
               </Layer>
             </Stage>
-            {/* )} */}
           </div>
         </div>
       </div>
