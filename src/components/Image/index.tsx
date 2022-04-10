@@ -6,6 +6,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Circle, Image, KonvaNodeEvents, Rect } from 'react-konva';
 import useImage from 'use-image';
 
+export const loadingSufix = '-loading';
+
 function getCrop(
   image: any,
   size: { width: number; height: number },
@@ -72,7 +74,7 @@ const URLImage = ({
 
   useEffect(() => {
     if (status === 'loading') {
-      onSelect(id + 13221055266);
+      onSelect(id + loadingSufix);
     } else if (status === 'loaded') {
       onSelect();
     }
@@ -97,9 +99,9 @@ const URLImage = ({
           y={shapeProps.y}
           width={1080 * scale.x}
           height={height * scale.y}
-          id={(id + 13221055266).toString()}
-          fill={'blue'}
-          opacity={0.6}
+          id={id + loadingSufix}
+          fill={'skyblue'}
+          opacity={0.8}
         />
       </>
     );

@@ -1,5 +1,12 @@
-import URLImage, { ImageElement, URLImageProps } from '@/components/Image';
+import { DataContext, DataProp } from '@/App';
+import URLImage, {
+  ImageElement,
+  loadingSufix,
+  URLImageProps
+} from '@/components/Image';
 import { ScaleTool } from '@/components/ScaleTool';
+import TextElement, { TextElementProps } from '@/components/Text';
+import { useMutationObserver, useWindowResize } from '@/Hooks/home';
 import { splitCode } from '@/layout/LeftSider/Photos';
 import { getBoardSetting } from '@/store/feature/boardSlice';
 import {
@@ -18,7 +25,14 @@ import { ArrowConfig } from 'konva/lib/shapes/Arrow';
 import { ImageConfig } from 'konva/lib/shapes/Image';
 import { RectConfig } from 'konva/lib/shapes/Rect';
 import { TextConfig } from 'konva/lib/shapes/Text';
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useReducer,
+  useRef,
+  useState
+} from 'react';
 import {
   Arrow,
   Group,
@@ -34,122 +48,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import useImage from 'use-image';
 
 import './index.css';
+import { reducer, reducerInitialState, Size } from './reducer';
 
 export enum ShpaeType {
-  image = 'image'
-}
-
-const reducerInitialState = {
-  boardSize: { width: 0, height: 0 },
-  boardPostion: {
-    x: 0,
-    y: 0
-  },
-  scale: {
-    x: 1,
-    y: 1
-  },
-  defaultScale: 1
-};
-
-type Size = {
-  width: number;
-  height: number;
-};
-
-type ACTIONTYPE =
-  | {
-      type: 'boardSize';
-      payload: {
-        width: number;
-        height: number;
-      };
-    }
-  | {
-      type: 'resizeScale';
-      payload: {
-        stageWidth: number;
-        stageHeight: number;
-      };
-    }
-  | {
-      type: 'scaleChange';
-      payload: {
-        scale: number;
-        stageWidth: number;
-        stageHeight: number;
-      };
-    };
-
-function reducer(state: typeof reducerInitialState, action: ACTIONTYPE) {
-  const { width: boardWidth, height: boardHeight } = state.boardSize;
-  switch (action.type) {
-    case 'boardSize':
-      return { ...state, boardSize: action.payload };
-    case 'resizeScale':
-      const { stageWidth, stageHeight } = action.payload;
-      const { width: ScaleWwidth, height: ScaleHeight } = containResize(
-        stageWidth,
-        stageHeight,
-        boardWidth,
-        boardHeight
-      );
-      const { ratio, x, y } = setRatioCenter(
-        ScaleWwidth,
-        ScaleHeight,
-        stageWidth,
-        stageHeight,
-        boardWidth,
-        boardHeight
-      );
-
-      const res = calculateAspectRatioFit(
-        boardWidth,
-        boardHeight,
-        stageWidth,
-        stageHeight
-      );
-
-      return {
-        ...state,
-        scale: {
-          x: ratio,
-          y: ratio
-        },
-        defaultScale: ratio,
-        boardPostion: {
-          x: x,
-          y: y
-        }
-      };
-    case 'scaleChange':
-      const {
-        scale,
-        stageWidth: sWidth,
-        stageHeight: sHeight
-      } = action.payload;
-
-      const { x: px, y: py } = calcPosition(
-        sWidth,
-        sHeight,
-        boardWidth * scale,
-        boardHeight * scale
-      );
-
-      return {
-        ...state,
-        scale: {
-          x: scale,
-          y: scale
-        },
-        boardPostion: {
-          x: px,
-          y: py
-        }
-      };
-    default:
-      throw new Error('无对应的action.type');
-  }
+  image = 'image',
+  text = 'text'
 }
 
 export default function Home() {
@@ -160,15 +63,12 @@ export default function Home() {
   const stageRef = useRef<Konva.Stage | null>();
   const boardRef = useRef<Konva.Rect | null>();
   const maskRef = useRef<Konva.Layer | null>();
-  const GROUPRef = useRef<Konva.Group | null>();
   const layerRef = useRef<Konva.Layer | null>();
   const defaultStageSize = useRef<Size | null>();
 
   const ref = useRef(false);
 
   const trRef = useRef<Konva.Transformer>();
-
-  const [selectedId, selectShape] = useState<number | null>(null);
 
   const handleClick = useCallback((e) => {}, []);
   const handleMouseDown = useCallback((e) => {
@@ -183,7 +83,12 @@ export default function Home() {
 
   const [board, dispatch] = useReducer(reducer, reducerInitialState);
 
-  const [elements, setElements] = useState<Array<ImageElement>>([]);
+  const { elements, setElements, selectedId, selectShape }: DataProp =
+    useContext(DataContext);
+
+  // const [elements, setElements] = useState<
+  //   Array<ImageElement | TextElementProps>
+  // >([]);
 
   const resizeHandle = useCallback(() => {
     const dom = StageWrapRef.current as HTMLElement;
@@ -215,39 +120,9 @@ export default function Home() {
     });
   }, [boardSize]);
 
-  useEffect(() => {
-    window.addEventListener('resize', resizeHandle);
-    resizeHandle();
-    return () => {
-      window.removeEventListener('resize', resizeHandle);
-    };
-  }, [resizeHandle]);
+  useWindowResize(resizeHandle);
 
-  useEffect(() => {
-    const observerSideDom = () => {
-      const config = { attributes: true };
-      const callback = function () {
-        setTimeout(() => {
-          resizeHandle();
-        });
-      };
-      // 创建一个观察器实例并传入回调函数
-      const observer = new MutationObserver(callback);
-      // 以上述配置开始观察目标节点
-      observer.observe(document.getElementById('side') as HTMLElement, config);
-      return observer;
-    };
-    const observer = observerSideDom();
-
-    return () => observer?.disconnect();
-  }, [resizeHandle]);
-
-  useEffect(() => {
-    // const mask = maskRef.current as Konva.Layer;
-    // let tr = new Konva.Transformer();
-    // mask.add(tr);
-    // trRef.current = tr;
-  }, []);
+  useMutationObserver(resizeHandle);
 
   const onScaleChange = (scale: number, resize = false) => {
     const { boardSize } = board;
@@ -331,41 +206,64 @@ export default function Home() {
 
     function drop(e: any) {
       const stage = stageRef.current as Konva.Stage;
-
-      let itemURL = e.dataTransfer?.getData('text/plain') as string;
-
-      const [height, src] = itemURL.split(splitCode);
-
       e.preventDefault();
       stage.setPointersPositions(e);
-
       const { x: cx, y: cy } = stage.getPointerPosition() as {
         x: number;
         y: number;
       };
-
       const id = Date.now();
-      setElements((elements) => [
-        ...elements,
-        {
-          ratio: innerWtihOuterBoxRatio(
-            cx,
-            cy,
-            board.boardPostion.x,
-            board.boardPostion.y,
-            board.boardSize.width * board.scale.x,
-            board.boardSize.height * board.scale.y
-          ),
-          shapeProps: {
-            x: cx,
-            y: cy,
-            src
-          },
-          id,
-          height,
-          shapeType: ShpaeType.image
-        } as unknown as ImageElement
-      ]);
+
+      let TransData = e.dataTransfer?.getData('text/plain') as string;
+
+      const getRatio = () => {
+        return innerWtihOuterBoxRatio(
+          cx,
+          cy,
+          board.boardPostion.x,
+          board.boardPostion.y,
+          board.boardSize.width * board.scale.x,
+          board.boardSize.height * board.scale.y
+        );
+      };
+
+      if (TransData && TransData.includes(splitCode)) {
+        const [height, src] = TransData.split(splitCode);
+        setElements((elements: Array<ImageElement | TextElementProps>) => [
+          ...elements,
+          {
+            ratio: getRatio(),
+            shapeProps: {
+              x: cx,
+              y: cy,
+              src
+            },
+            id: `image${id}`,
+            height,
+            shapeType: ShpaeType.image
+          } as unknown as ImageElement
+        ]);
+      } else if (TransData) {
+        setElements((elements: Array<ImageElement | TextElementProps>) => [
+          ...elements,
+          {
+            ratio: getRatio(),
+            shapeProps: {
+              x: cx,
+              y: cy,
+              text: TransData,
+              fontSize: 22,
+              width: 200,
+              // height: 50,
+              align: 'center',
+              visible: true,
+              fontFamily: 'Roboto'
+            },
+            id: `text${id}`,
+            shapeType: ShpaeType.text
+          } as unknown as TextElementProps
+        ]);
+      }
     }
 
     con.addEventListener('dragover', dragover);
@@ -374,11 +272,11 @@ export default function Home() {
       con.removeEventListener('dragover', dragover);
       con.removeEventListener('drop', drop);
     };
-  }, [board]);
+  }, [board, setElements]);
 
   useEffect(() => {
     if (ref.current) {
-      setElements((p) => {
+      setElements((p: Array<ImageElement | TextElementProps>) => {
         let result = p.map((item) => {
           return {
             ...item,
@@ -398,13 +296,13 @@ export default function Home() {
     } else {
       ref.current = true;
     }
-  }, [board]);
+  }, [board, setElements]);
 
   const shapeChange = useCallback(
     (newAttrs: Konva.ImageConfig, index: number) => {
       const { boardPostion, boardSize } = board;
 
-      setElements((elements) => {
+      setElements((elements: Array<ImageElement | TextElementProps>) => {
         const all = elements.slice();
         const target = all[index];
         target.shapeProps = newAttrs;
@@ -419,7 +317,7 @@ export default function Home() {
         return all;
       });
     },
-    [board]
+    [board, setElements]
   );
 
   const renderElements = useCallback(() => {
@@ -428,8 +326,8 @@ export default function Home() {
         case ShpaeType.image:
           return (
             <URLImage
-              key={index}
-              {...item}
+              key={item.id}
+              {...(item as ImageElement)}
               scale={{
                 x: board.scale.x,
                 y: board.scale.y
@@ -438,7 +336,26 @@ export default function Home() {
                 shapeChange(newAttrs, index)
               }
               onSelect={(id?: number) => {
-                selectShape(id && typeof id === 'number' ? id : item.id);
+                selectShape(
+                  id && id.toString().includes(loadingSufix) ? id : item.id
+                );
+              }}
+            />
+          );
+        case ShpaeType.text:
+          return (
+            <TextElement
+              key={item.id}
+              {...(item as TextElementProps)}
+              scale={{
+                x: board.scale.x,
+                y: board.scale.y
+              }}
+              onChange={(newAttrs: Konva.ImageConfig) =>
+                shapeChange(newAttrs, index)
+              }
+              onSelect={(data: any) => {
+                selectShape(data === null ? data : item.id);
               }}
             />
           );
@@ -450,13 +367,11 @@ export default function Home() {
 
   useEffect(() => {
     if (selectedId) {
-      setTimeout(() => {
-        const shape = stageRef.current?.find(`#${selectedId}`);
-        if (shape) {
-          trRef.current?.nodes(shape);
-          trRef.current?.getLayer()?.batchDraw();
-        }
-      });
+      const shape = stageRef.current?.find(`#${selectedId}`);
+      if (shape) {
+        trRef.current?.nodes(shape);
+        trRef.current?.getLayer()?.batchDraw();
+      }
     }
   }, [selectedId]);
 
@@ -508,7 +423,29 @@ export default function Home() {
                 {selectedId && (
                   <Transformer
                     ref={trRef as React.LegacyRef<Konva.Transformer>}
-                    keepRatio={false}
+                    id='maskLayerTransform'
+                    keepRatio={true}
+                    enabledAnchors={
+                      selectedId && selectedId.toString().includes('text')
+                        ? [
+                            'top-left',
+                            'top-right',
+                            'middle-right',
+                            'middle-left',
+                            'bottom-left',
+                            'bottom-right'
+                          ]
+                        : [
+                            'top-left',
+                            'top-center',
+                            'top-right',
+                            'middle-right',
+                            'middle-left',
+                            'bottom-left',
+                            'bottom-center',
+                            'bottom-right'
+                          ]
+                    }
                     boundBoxFunc={(oldBox, newBox) => {
                       // limit resize
                       if (newBox.width < 10 || newBox.height < 10) {

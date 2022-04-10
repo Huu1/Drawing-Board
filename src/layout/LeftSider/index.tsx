@@ -8,18 +8,24 @@ import { useSelector } from 'react-redux';
 import BoardSize from './BoardSize';
 
 import './index.css';
+import Layers from './Layers';
 import Photos from './Photos';
+import Texts from './Texts';
 
 enum enumMenu {
   background = 'background',
   size = 'size',
-  photo = 'photo'
+  photo = 'photo',
+  text = 'text',
+  layer = 'layer'
 }
 
 const sideMemu = [
+  { title: '尺寸', icon: '', value: enumMenu.size },
+  { title: '照片', icon: '', value: enumMenu.photo },
   { title: '背景', icon: '', value: enumMenu.background },
-  { title: 'size', icon: '', value: enumMenu.size },
-  { title: '照片', icon: '', value: enumMenu.photo }
+  { title: '文字', icon: '', value: enumMenu.text },
+  { title: '图层', icon: '', value: enumMenu.layer }
 ];
 
 const LeftSider = () => {
@@ -68,6 +74,11 @@ const LeftSider = () => {
         />
 
         <Photos style={{ display: checked === enumMenu.photo ? '' : 'none' }} />
+
+        <Texts style={{ display: checked === enumMenu.text ? '' : 'none' }} />
+
+        <Layers style={{ display: checked === enumMenu.layer ? '' : 'none' }} />
+
         <div
           onClick={() => sideToggle()}
           className='absolute top-1/2'
