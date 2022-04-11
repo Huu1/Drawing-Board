@@ -30,7 +30,9 @@ const TextElement = ({
 }: TextProps) => {
   const shapeRef = useRef<Konva.Text>();
 
-  const [divStyle, setDivStyle] = useState<CSSProperties>();
+  useEffect(() => {
+    onSelect();
+  }, []);
 
   function onDblClick() {
     const textNode = shapeRef.current as Konva.Text;
@@ -60,15 +62,20 @@ const TextElement = ({
     textarea.style.top = areaPosition.y + 'px';
     textarea.style.left = areaPosition.x + 'px';
     textarea.style.width =
-      (shapeProps.width as number) * scale.x - textNode.padding() * 2 + 'px';
-    textarea.style.height = textNode.height() * scale.y + 'px';
-    textarea.style.fontSize = textNode.fontSize() * scale.x + 'px';
+      textNode.width() * textNode.scaleX() -
+      textNode.padding() * textNode.scaleX() * 2 +
+      'px';
+    textarea.style.height =
+      textNode.height() * textNode.scaleY() -
+      (textNode.padding() * textNode.scaleX() * 2 + 5) +
+      'px';
+    textarea.style.fontSize = textNode.fontSize() * textNode.scaleX() + 'px';
     textarea.style.border = 'none';
-    textarea.style.padding = '0px';
+    textarea.style.padding = '2px';
     textarea.style.margin = '0px';
     textarea.style.overflow = 'hidden';
     textarea.style.background = 'none';
-    textarea.style.outline = 'none';
+    textarea.style.outlineColor = 'skyblue';
     textarea.style.resize = 'none';
     textarea.style.lineHeight = textNode.lineHeight() + '';
     textarea.style.fontFamily = textNode.fontFamily();
@@ -99,19 +106,16 @@ const TextElement = ({
     textarea.focus();
 
     function removeTextarea() {
-      const text = textarea.value;
-      const height = textarea.offsetHeight / scale.y;
-      const width = textarea.offsetWidth / scale.x;
       onChange({
         ...shapeProps,
-        text,
-        visible: true,
-        width,
-        height
+        text: textarea.value,
+        visible: true
+      });
+      setTimeout(() => {
+        onSelect();
       });
       textarea.parentNode?.removeChild(textarea);
       window.removeEventListener('click', handleOutsideClick);
-      onSelect();
     }
     textarea.addEventListener('keydown', function (e) {
       if (e.keyCode === 13 && !e.shiftKey) {
@@ -121,18 +125,43 @@ const TextElement = ({
         removeTextarea();
       }
     });
+    function setTextareaWidth(newWidth: number) {
+      // if (!newWidth) {
+      //   // set width for placeholder
+      //   newWidth = textNode.placeholder.length * textNode.fontSize();
+      // }
+      // some extra fixes on different browsers
+      let isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      let isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+      if (isSafari || isFirefox) {
+        newWidth = Math.ceil(newWidth);
+      }
 
-    textarea.addEventListener('keydown', function (e) {
-      // let s = textNode.getAbsoluteScale().x;
-      // setTextareaWidth((shapeProps.width as number) * scale.x);
+      let isEdge = document.DOCUMENT_NODE || /Edge/.test(navigator.userAgent);
+      if (isEdge) {
+        newWidth += 1;
+      }
+      textarea.style.width = newWidth + 'px';
+    }
+
+    textarea.addEventListener('keydown', function (e: any) {
+      let s = textNode.getAbsoluteScale().x;
+      setTextareaWidth((shapeProps.width as number) * s);
       textarea.style.height = 'auto';
       textarea.style.height =
-        textarea.scrollHeight + textNode.fontSize() * scale.x + 'px';
+        textarea.scrollHeight + textNode.fontSize() + 'px';
+      const width = textarea.offsetWidth / scale.x;
+
+      onChange({
+        ...shapeProps,
+        visible: false,
+        width,
+        height: textarea.clientHeight / scale.y - textNode.fontSize()
+      });
     });
 
     function handleOutsideClick(e: any) {
       if (e.target !== textarea) {
-        textNode.text(textarea.value);
         removeTextarea();
       }
     }
@@ -143,17 +172,6 @@ const TextElement = ({
 
   return (
     <>
-      {/* <Html
-        // divProps={{
-        //   style: {
-        //     position: 'absolute',
-        //     top: 10,
-        //     left: 10
-        //   }
-        // }}
-      >
-        <textarea style={divStyle}></textarea>
-      </Html> */}
       <Text
         {...shapeProps}
         id={id.toString()}
@@ -161,6 +179,7 @@ const TextElement = ({
         onDblTap={onDblClick}
         onClick={onSelect}
         onTap={onSelect}
+        onMouseDown={onSelect}
         scale={scale}
         ref={shapeRef as React.LegacyRef<Konva.Text>}
         draggable={true}
@@ -174,24 +193,11 @@ const TextElement = ({
         onTransform={(e) => {
           // 🚀🚀🚀🚀🚀
           const node = shapeRef.current as Konva.Text;
-          // let tr = node
-          //   .getStage()
-          //   ?.findOne('#maskLayerTransform') as Konva.Transformer;
-
-          // let i = tr.getActiveAnchor();
-
-          const scaleX = node.scaleX();
-          const scaleY = node.scaleY();
           onChange({
             ...shapeProps,
             x: node.x(),
             y: node.y(),
-            // fontSize: ['middle-left', 'middle-right'].includes(i)
-            //   ? node.fontSize()
-            //   : node.fontSize() * (1 + scaleX - scale.x),
-            // set minimal value
-            width: node.width() * (1 + scaleX - scale.x),
-            height: node.height() * (1 + scaleY - scale.y)
+            width: node.width() * (1 + node.scaleX() - scale.x)
           });
         }}
       />

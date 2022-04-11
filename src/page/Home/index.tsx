@@ -69,11 +69,13 @@ export default function Home() {
   const ref = useRef(false);
 
   const trRef = useRef<Konva.Transformer>();
+  const trBoarderRef = useRef<Konva.Transformer>();
 
   const handleClick = useCallback((e) => {}, []);
   const handleMouseDown = useCallback((e) => {
     const clickedOnEmpty =
       e.target === e.target.getStage() || e.target === boardRef.current;
+    trBoarderRef.current?.nodes([]);
     if (clickedOnEmpty) {
       selectShape(null);
     }
@@ -253,8 +255,8 @@ export default function Home() {
               y: cy,
               text: TransData,
               fontSize: 22,
-              width: 200,
-              // height: 50,
+              width: 400,
+              padding: 5,
               align: 'center',
               visible: true,
               fontFamily: 'Roboto'
@@ -375,6 +377,23 @@ export default function Home() {
     }
   }, [selectedId]);
 
+  const handleMouseOver = (e: any) => {
+    if (e.target === e.target.getStage() || e.target === boardRef.current) {
+      return;
+    }
+    if (e.target.attrs.id === selectedId) {
+      return;
+    }
+    trBoarderRef.current?.nodes([e.target]);
+  };
+
+  const handleMouseOut = (e: any) => {
+    if (e.target === e.target.getStage() || e.target === boardRef.current) {
+      return;
+    }
+    trBoarderRef.current?.nodes([]);
+  };
+
   return (
     <div
       style={{ flex: '1' }}
@@ -391,6 +410,8 @@ export default function Home() {
               onMouseDown={handleMouseDown}
               onMousemove={handleMouseMove}
               onMouseup={handleMouseUp}
+              onMouseOver={handleMouseOver}
+              onMouseOut={handleMouseOut}
               // onClick={handleClick}
               className='stageClass'
               onDragEnd={dragImg}
@@ -418,6 +439,13 @@ export default function Home() {
                   }}
                 />
                 {renderElements()}
+
+                <Transformer
+                  ref={trBoarderRef as React.LegacyRef<Konva.Transformer>}
+                  enabledAnchors={[]}
+                  rotateEnabled={false}
+                  borderStrokeWidth={2}
+                />
               </Layer>
               <Layer ref={maskRef as React.LegacyRef<Konva.Layer>}>
                 {selectedId && (
@@ -425,15 +453,16 @@ export default function Home() {
                     ref={trRef as React.LegacyRef<Konva.Transformer>}
                     id='maskLayerTransform'
                     keepRatio={true}
+                    borderStrokeWidth={2}
                     enabledAnchors={
                       selectedId && selectedId.toString().includes('text')
                         ? [
-                            'top-left',
-                            'top-right',
+                            // 'top-left',
+                            // 'top-right',
                             'middle-right',
-                            'middle-left',
-                            'bottom-left',
-                            'bottom-right'
+                            'middle-left'
+                            // 'bottom-left',
+                            // 'bottom-right'
                           ]
                         : [
                             'top-left',
