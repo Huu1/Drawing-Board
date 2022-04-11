@@ -1,19 +1,14 @@
 import ColorPicker from '@/components/ColorPicker';
-import {
-  getBrushSetting,
-  setBrushColor,
-  setBrushWidth
-} from '@/store/feature/brushSlice';
 import { Col, Row, Slider } from 'antd';
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 const BrushTool = () => {
-  const { brushWidth, brushColor } = useSelector(getBrushSetting);
+  // const { brushWidth, brushColor } = useSelector(getBrushSetting);
   const dispatch = useDispatch();
   return (
     <div>
-      <Row justify='space-between' align='middle'>
+      {/* <Row justify='space-between' align='middle'>
         <Col span={8} className='text-gray-300'>
           画笔粗细
         </Col>
@@ -31,7 +26,7 @@ const BrushTool = () => {
           color={brushColor}
           onChange={(color) => dispatch(setBrushColor(color))}
         />
-      </Row>
+      </Row> */}
     </div>
   );
 };

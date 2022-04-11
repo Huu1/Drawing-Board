@@ -29,6 +29,8 @@ const errorHandle = (status: number) => {
 const request = axios.create({ timeout: 1000 * 12 });
 // 设置post请求头
 request.defaults.headers.post['Content-Type'] = 'application/json';
+// request.defaults.headers['Authorization'] =
+//   'Client-ID WIvdiAkLuUIUydljVOzESjiUmIJgLQvESRpIQaoR76I';
 
 /**
  * 请求拦截器

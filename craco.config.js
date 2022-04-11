@@ -43,8 +43,8 @@ module.exports = ({ env: webpackEnv }) => {
         new WebpackBar({
           name: webpackEnv !== 'production' ? '正在启动' : '正在打包',
           color: '#fa8c16'
-        }),
-        new HardSourceWebpackPlugin()
+        })
+        // new HardSourceWebpackPlugin()
       ],
       alias: {
         '@': resolve('src')
