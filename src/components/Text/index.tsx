@@ -67,7 +67,7 @@ const TextElement = ({
       'px';
     textarea.style.height =
       textNode.height() * textNode.scaleY() -
-      (textNode.padding() * textNode.scaleX() * 2 + 5) +
+      (textNode.padding() * textNode.scaleY() * 2 + 10) +
       'px';
     textarea.style.fontSize = textNode.fontSize() * textNode.scaleX() + 'px';
     textarea.style.border = 'none';
@@ -117,14 +117,6 @@ const TextElement = ({
       textarea.parentNode?.removeChild(textarea);
       window.removeEventListener('click', handleOutsideClick);
     }
-    textarea.addEventListener('keydown', function (e) {
-      if (e.keyCode === 13 && !e.shiftKey) {
-        removeTextarea();
-      }
-      if (e.keyCode === 27) {
-        removeTextarea();
-      }
-    });
     function setTextareaWidth(newWidth: number) {
       // if (!newWidth) {
       //   // set width for placeholder
@@ -158,6 +150,12 @@ const TextElement = ({
         width,
         height: textarea.clientHeight / scale.y - textNode.fontSize()
       });
+      if (e.keyCode === 13 && !e.shiftKey) {
+        removeTextarea();
+      }
+      if (e.keyCode === 27) {
+        removeTextarea();
+      }
     });
 
     function handleOutsideClick(e: any) {
@@ -182,7 +180,6 @@ const TextElement = ({
         onMouseDown={onSelect}
         scale={scale}
         ref={shapeRef as React.LegacyRef<Konva.Text>}
-        draggable={true}
         onDragEnd={(e) => {
           onChange({
             ...shapeProps,

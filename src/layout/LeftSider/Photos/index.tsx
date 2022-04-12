@@ -40,7 +40,6 @@ const Photos = ({ style }: sideProps) => {
 
   useEffect(() => {
     loadMoreData();
-    console.log('xxxx');
   }, []);
 
   const onDragStart = (

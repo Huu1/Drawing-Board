@@ -229,6 +229,12 @@ export default function Home() {
         );
       };
 
+      const commenShapeProps = {
+        x: cx,
+        y: cy,
+        visible: true,
+        draggable: true
+      };
       if (TransData && TransData.includes(splitCode)) {
         const [height, src] = TransData.split(splitCode);
         setElements((elements: Array<ImageElement | TextElementProps>) => [
@@ -236,8 +242,7 @@ export default function Home() {
           {
             ratio: getRatio(),
             shapeProps: {
-              x: cx,
-              y: cy,
+              ...commenShapeProps,
               src
             },
             id: `image${id}`,
@@ -251,14 +256,12 @@ export default function Home() {
           {
             ratio: getRatio(),
             shapeProps: {
-              x: cx,
-              y: cy,
+              ...commenShapeProps,
               text: TransData,
               fontSize: 22,
               width: 400,
               padding: 5,
               align: 'center',
-              visible: true,
               fontFamily: 'Roboto'
             },
             id: `text${id}`,
@@ -454,26 +457,41 @@ export default function Home() {
                     id='maskLayerTransform'
                     keepRatio={true}
                     borderStrokeWidth={2}
+                    rotateEnabled={
+                      elements.find((i) => i.id.toString() === selectedId)
+                        ?.shapeProps.draggable
+                        ? true
+                        : false
+                    }
+                    visible={
+                      elements.find((i) => i.id.toString() === selectedId)
+                        ?.shapeProps.visible || selectedId.includes('loading')
+                        ? true
+                        : false
+                    }
                     enabledAnchors={
-                      selectedId && selectedId.toString().includes('text')
-                        ? [
-                            // 'top-left',
-                            // 'top-right',
-                            'middle-right',
-                            'middle-left'
-                            // 'bottom-left',
-                            // 'bottom-right'
-                          ]
-                        : [
-                            'top-left',
-                            'top-center',
-                            'top-right',
-                            'middle-right',
-                            'middle-left',
-                            'bottom-left',
-                            'bottom-center',
-                            'bottom-right'
-                          ]
+                      elements.find((i) => i.id.toString() === selectedId)
+                        ?.shapeProps.draggable
+                        ? selectedId.toString().includes('text')
+                          ? [
+                              // 'top-left',
+                              // 'top-right',
+                              'middle-right',
+                              'middle-left'
+                              // 'bottom-left',
+                              // 'bottom-right'
+                            ]
+                          : [
+                              'top-left',
+                              'top-center',
+                              'top-right',
+                              'middle-right',
+                              'middle-left',
+                              'bottom-left',
+                              'bottom-center',
+                              'bottom-right'
+                            ]
+                        : []
                     }
                     boundBoxFunc={(oldBox, newBox) => {
                       // limit resize

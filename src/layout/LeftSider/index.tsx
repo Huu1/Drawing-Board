@@ -21,11 +21,11 @@ enum enumMenu {
 }
 
 const sideMemu = [
-  { title: '尺寸', icon: '', value: enumMenu.size },
-  { title: '照片', icon: '', value: enumMenu.photo },
-  { title: '背景', icon: '', value: enumMenu.background },
-  { title: '文字', icon: '', value: enumMenu.text },
-  { title: '图层', icon: '', value: enumMenu.layer }
+  { title: '文字', icon: 'icon-wenzi', value: enumMenu.text },
+  { title: '照片', icon: 'icon-tupian', value: enumMenu.photo },
+  { title: '背景', icon: 'icon-caidan', value: enumMenu.background },
+  { title: '图层', icon: 'icon-layers', value: enumMenu.layer },
+  { title: '尺寸', icon: 'icon-resize_', value: enumMenu.size }
 ];
 
 const LeftSider = () => {
@@ -34,16 +34,16 @@ const LeftSider = () => {
 
   const sideToggle = (val?: any) => {
     if (val) {
-      ref.current.style.width = '422px';
+      ref.current.style.width = '432px';
     } else {
-      ref.current.style.width = '72px';
+      ref.current.style.width = '82px';
     }
     setChecked(val);
   };
 
   return (
     <div className='flex h-full bg-primary' id='side' ref={ref}>
-      <div className='bg-primary flex flex-col '>
+      <div className='bg-primary flex flex-col side-left-menu'>
         {sideMemu.map((item) => {
           return (
             <div
@@ -53,8 +53,8 @@ const LeftSider = () => {
               }`}
               onClick={() => sideToggle(item.value)}
             >
-              <span>22</span>
-              <span>{item.title}</span>
+              <IconFont style={{ fontSize: '22px' }} type={item.icon} />
+              <div className='mt-1.5 text-xs'>{item.title}</div>
             </div>
           );
         })}

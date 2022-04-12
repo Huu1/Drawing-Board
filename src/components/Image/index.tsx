@@ -117,7 +117,6 @@ const URLImage = ({
       onMouseDown={onSelect}
       scale={scale}
       ref={shapeRef as React.LegacyRef<Konva.Image>}
-      draggable={true}
       onDragEnd={(e) => {
         onChange({
           ...shapeProps,

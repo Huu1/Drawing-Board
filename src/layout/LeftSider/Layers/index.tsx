@@ -6,8 +6,11 @@ import './index.css';
 import { sideProps } from '../BoardSize';
 import { DataContext, DataProp } from '@/App';
 import { Input } from 'antd';
+import IconFont from '@/components/Iconfont';
 
 // export const splitCode = '*&***&*';
+
+const iconStyle = { color: '#abb3bf', fontSize: '16px' };
 
 const HandleIcon = () => (
   <svg
@@ -16,7 +19,7 @@ const HandleIcon = () => (
     height='16'
     viewBox='0 0 22 22'
     fill='none'
-    stroke='#f2f4f5'
+    stroke='#abb3bf'
     strokeWidth='2'
     strokeLinecap='round'
     strokeLinejoin='round'
@@ -38,16 +41,30 @@ export const buttonStyles = {
   width: 'auto',
   overflow: 'visible',
   cursor: 'pointer',
-  height: '30px',
-  marginRight: '5px'
+  height: '28px',
+  marginRight: '10px'
 };
 
 const Layers = ({ style }: sideProps) => {
-  const { elements, setElements }: DataProp = useContext(DataContext);
+  const { elements, setElements, selectShape, selectedId }: DataProp =
+    useContext(DataContext);
 
-  const [loading, setLoading] = useState(false);
+  const setShapeProps = (index: number, props: string) => {
+    const result = elements.slice();
+    result[index].shapeProps[props] = !result[index].shapeProps[props];
+    setElements(result);
+  };
 
-  const [items, setItems] = useState<number[]>([1, 2, 3, 4, 5]);
+  // const setShapeName = (index: number,props:string)=> {
+  //   const result = elements.slice();
+  //   result[index].shapeProps[props] = ;
+  //   setElements(result);
+  // }
+
+  const deleteElement = (id: number) => {
+    const result = elements.slice().filter((i) => i.id !== id);
+    setElements(result);
+  };
 
   return (
     <div className='' style={{ ...style }}>
@@ -60,8 +77,9 @@ const Layers = ({ style }: sideProps) => {
           renderList={({ children, props }: any) => (
             <ul {...props}>{children}</ul>
           )}
-          renderItem={({ value, props, isDragged, isSelected }) => (
+          renderItem={({ value, props, isDragged, isSelected, index }) => (
             <li
+              onClick={() => selectShape(value.id)}
               {...props}
               style={{
                 ...props.style,
@@ -79,8 +97,11 @@ const Layers = ({ style }: sideProps) => {
                 backgroundColor:
                   isDragged || isSelected ? 'rgba(0, 161, 255, 0.2)' : '#383e47'
               }}
+              className={`${
+                value.id.toString() === selectedId ? 'layer-selected' : ''
+              }`}
             >
-              <div>
+              <div className='flex items-center	' style={{ width: '60px' }}>
                 <button
                   data-movable-handle
                   style={{
@@ -91,14 +112,45 @@ const Layers = ({ style }: sideProps) => {
                 >
                   <HandleIcon />
                 </button>
-                <span style={{ color: '#f6f7f9' }}>{value.shapeType}</span>
+                <span style={{ color: '#abb3bf' }}>{value.shapeType}</span>
               </div>
 
-              <div>
+              <div className='layer-input px-3 '>
                 <input
-                  style={{ width: '80px' }}
-                  defaultValue={value.shapeProps.name || '未命名'}
+                  className='w-36'
+                  placeholder='输入元素名称'
+                  value={value.shapeProps.name || `未命名${value.shapeType}`}
+                  disabled
                 />
+              </div>
+
+              <div className='ml-auto	flex'>
+                <div onClick={() => setShapeProps(index as number, 'visible')}>
+                  <IconFont
+                    type={
+                      value.shapeProps.visible
+                        ? 'icon-yanjing'
+                        : 'icon-bukejian'
+                    }
+                    style={iconStyle}
+                  />
+                </div>
+                <div
+                  className='mx-4	'
+                  onClick={() => setShapeProps(index as number, 'draggable')}
+                >
+                  <IconFont
+                    type={
+                      value.shapeProps.draggable
+                        ? 'icon-jiesuo'
+                        : 'icon-suoding'
+                    }
+                    style={iconStyle}
+                  />
+                </div>
+                <div className='mr-1' onClick={() => deleteElement(value.id)}>
+                  <IconFont type='icon-shanchu' style={iconStyle} />
+                </div>
               </div>
             </li>
           )}

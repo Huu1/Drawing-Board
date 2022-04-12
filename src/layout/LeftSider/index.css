@@ -2,6 +2,9 @@
   min-width: 72px;
   padding: 16px 8px;
   font-size: 16px;
+  color: white;
+  border-radius: 5px;
+  margin-bottom: 5px;
 }
 
 .side-menu:hover {
@@ -14,6 +17,11 @@
   background-color: rgba(19, 124, 189, 0.2);
 }
 
+.side-left-menu {
+  padding: 4px;
+  border: 2px solid #464450;
+}
+
 .close {
   position: absolute;
   top: 50%;
@@ -21,3 +29,7 @@
   transform: translate(-50%, -50%) scaleY(2);
   font-size: 0.5rem;
 }
+
+/* #side {
+  border-right: 1px solid black;
+} */
