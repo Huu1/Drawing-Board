@@ -1,10 +1,5 @@
 import IconFont from '@/components/Iconfont';
-import BrushTool from '@/page/Home/tool/brush';
-import { getBoardSetting } from '@/store/feature/boardSlice';
-import { Button, Radio } from 'antd';
-import { check } from 'prettier';
 import React, { useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
 import BoardSize from './BoardSize';
 
 import './index.css';

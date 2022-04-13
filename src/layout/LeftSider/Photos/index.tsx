@@ -7,6 +7,7 @@ import LazyLoad from 'react-lazyload';
 
 import './index.css';
 import { sideProps } from '../BoardSize';
+import Masonry from 'react-masonry-css';
 
 export const splitCode = '*&***&*';
 
@@ -21,10 +22,10 @@ const Photos = ({ style }: sideProps) => {
     setLoading(true);
 
     request({
-      url: 'https://api.unsplash.com/photos/random?count=20',
+      url: 'https://api.unsplash.com/photos/random?count=40',
       method: 'get',
       headers: {
-        Authorization: 'Client-ID Rc6PKQTVJIzf-UUo-7BEFqcxPpC6ZaK8JXOygsrFtGk'
+        Authorization: 'Client-ID g0hjw__H3OZAnfkzXMs4GpZZ9MvTmLsRzRufJMQnljI'
       }
     }).then((res: any) => {
       function map(item: any) {
@@ -71,26 +72,32 @@ const Photos = ({ style }: sideProps) => {
           loader={<Spin />}
           dataLength={data.length}
           next={loadMoreData}
-          hasMore={data.length < 100}
+          hasMore={data.length < 300}
           scrollableTarget='scrollableDiv'
         >
-          <div className='masonry'>
-            {data.length > 0 &&
-              data.map((item, index) => {
-                return (
-                  <LazyLoad key={index} once className='item'>
-                    <img
-                      src={item.urls.small}
-                      alt=''
-                      draggable
-                      onDragStart={(e) =>
-                        onDragStart(e, item.urls.regular, item)
-                      }
-                    />
-                  </LazyLoad>
-                );
-              })}
-          </div>
+          <Masonry
+            breakpointCols={2}
+            className='my-masonry-grid'
+            columnClassName='my-masonry-grid_column'
+          >
+            {/* array of JSX items */}
+            {data.map((item, index) => {
+              return (
+                <div key={index} className='item'>
+                  <img
+                    src={item.urls.small}
+                    alt=''
+                    draggable
+                    onDragStart={(e) => onDragStart(e, item.urls.regular, item)}
+                  />
+                  <div className='info text-center'>
+                    Photo by <span>{item.user.name}</span> on
+                    <span>Unsplash</span>
+                  </div>
+                </div>
+              );
+            })}
+          </Masonry>
         </InfiniteScroll>
       </div>
     </div>
